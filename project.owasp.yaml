@@ -1,0 +1,29 @@
+audience:
+  - breaker
+  - builder
+  - defender
+leaders:
+  - name: Divyesh Prajapati
+    email: divyesh.prajapati@owasp.org
+    github: divyesh-0x01
+  - name: Praveen K V
+  - name: Srithesh S
+  - name: Ranjit Kumar Singh
+  - name: Sumanth K
+level: 2
+license:
+  - Apache-2.0
+name: OWASP PromptMe
+pitch: A vulnerable application designed to demonstrate the OWASP Top 10 for Large Language Model (LLM) Applications.
+repositories:
+  - name: www-project-promptme
+    url: https://github.com/OWASP/www-project-promptme
+    description: PromptMe is an educational project that showcases security vulnerabilities in large language models (LLMs) and their web integrations.
+      It includes 10 hands-on challenges inspired by the OWASP LLM Top 10, demonstrating how these vulnerabilities can be discovered and exploited in real-world
+      scenarios.
+tags:
+  - PromptMe
+  - custom-tag-1
+  - custom-tag-2
+type: code
+website: https://owasp.org/www-project-promptme
