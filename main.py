@@ -1,9 +1,47 @@
-from flask import Flask, render_template, redirect, request
-import subprocess, sys, os, requests, psutil, time, socket
+from flask import Flask, render_template, redirect, request, jsonify
+import subprocess, sys, os, requests, psutil, time, socket, json
 
 app = Flask(__name__)
 
 running_apps = {}
+
+CONFIG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
+OLLAMA_CONFIG_PATH = os.path.join(CONFIG_DIR, "ollama_config.json")
+DEFAULT_OLLAMA_HOST = "http://localhost:11434"
+
+def load_ollama_config():
+    """Load Ollama host from config file."""
+    try:
+        if os.path.exists(OLLAMA_CONFIG_PATH):
+            with open(OLLAMA_CONFIG_PATH, "r") as f:
+                data = json.load(f)
+                return data.get("ollama_host", DEFAULT_OLLAMA_HOST).strip() or DEFAULT_OLLAMA_HOST
+    except (json.JSONDecodeError, IOError):
+        pass
+    return DEFAULT_OLLAMA_HOST
+
+def save_ollama_config(ollama_host):
+    """Save Ollama host to config file."""
+    os.makedirs(CONFIG_DIR, exist_ok=True)
+    with open(OLLAMA_CONFIG_PATH, "w") as f:
+        json.dump({"ollama_host": ollama_host}, f, indent=2)
+
+def normalize_ollama_host(host):
+    """Normalize host input to full URL (e.g. host:port -> http://host:port)."""
+    if not host or not host.strip():
+        return DEFAULT_OLLAMA_HOST
+    host = host.strip()
+    if "://" not in host:
+        host = "http://" + host
+    if ":" not in host.split("//")[-1]:
+        host = host.rstrip("/") + ":11434"
+    return host
+
+def get_challenge_env():
+    """Build environment for challenge subprocess with OLLAMA_HOST set."""
+    env = os.environ.copy()
+    env["OLLAMA_HOST"] = load_ollama_config()
+    return env
 
 def is_port_in_use(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -11,28 +49,35 @@ def is_port_in_use(port):
 
 def start_challenge(port, app_path):
     global running_apps
-    
+
     if is_port_in_use(port):
         raise RuntimeError(f"Port {port} is already in use. Challenge cannot be started.")
 
     # Create a log file for this challenge
-    log_file = f"logs/challenge_{port}.log"
-    os.makedirs("logs", exist_ok=True)
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    log_dir = os.path.join(project_root, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, f"challenge_{port}.log")
+
+    env = get_challenge_env()
 
     # Start the challenge and log stdout/stderr
     with open(log_file, "w") as log:
         process = subprocess.Popen(
-            [sys.executable, app_path],  # <-- uses the current interpreter
+            [sys.executable, app_path],
             stdout=log,
             stderr=log,
-            close_fds=True
+            close_fds=True,
+            env=env,
+            cwd=project_root
         )
-    
+
     running_apps[port] = process
 
 
 @app.route('/')
 def dashboard():
+    ollama_host = load_ollama_config()
     risks = [
         { 'id': 1, 'title': 'Prompt Injection', 'icon': 'fas fa-code' },
         { 'id': 2, 'title': 'Sensitive Info Disclosure', 'icon': 'fas fa-shield-alt' },
@@ -45,7 +90,19 @@ def dashboard():
         { 'id': 9, 'title': 'Misinformation', 'icon': 'fas fa-bullhorn' },
         { 'id': 10,'title': 'Unbounded Consumption', 'icon': 'fas fa-infinity' }
     ]
-    return render_template('dashboard.html', risks=risks)
+    return render_template('dashboard.html', risks=risks, ollama_host=ollama_host)
+
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    if request.method == 'POST':
+        data = request.get_json(silent=True) or request.form
+        ollama_host_raw = (data.get("ollama_host") or "").strip()
+        ollama_host = normalize_ollama_host(ollama_host_raw) if ollama_host_raw else DEFAULT_OLLAMA_HOST
+        save_ollama_config(ollama_host)
+        if request.is_json or request.content_type == "application/json":
+            return jsonify({"status": "saved", "ollama_host": ollama_host})
+        return redirect("/")
+    return jsonify({"ollama_host": load_ollama_config()})
 
 def wait_until_responsive(url, timeout=30):
     start_time = time.time()

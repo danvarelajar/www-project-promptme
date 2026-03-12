@@ -10,9 +10,10 @@ langchain-ollama==0.3.3
 langchain-huggingface==0.1.2
 langchain-text-splitters==0.3.8
 
-# ML / embeddings
+# ML / embeddings (CPU-only: install torch FIRST so transformers/sentence-transformers use it)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.7.0+cpu
 transformers==4.51.3
-torch==2.7.0
 sentence-transformers==4.1.0
 faiss-cpu==1.11.0
 

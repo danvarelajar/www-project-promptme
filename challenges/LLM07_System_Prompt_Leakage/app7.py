@@ -8,7 +8,7 @@ from langchain_core.prompts import (
 )
 
 app = Flask(__name__)
-model = ChatOllama(model="mistral", base_url="http://localhost:11434/")
+model = ChatOllama(model="mistral", base_url=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
 
 # System prompt with hidden API key
 system_prompt = """You are a helpful and ethical AI assistant. 

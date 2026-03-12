@@ -1,12 +1,12 @@
 from flask import Flask, render_template, request
+import os
 from langchain_ollama import ChatOllama
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import SystemMessagePromptTemplate, HumanMessagePromptTemplate, ChatPromptTemplate
 import time
 
 app = Flask(__name__)
-model = ChatOllama(model="mistral", base_url="http://localhost:11434/")
-#model = ChatOllama(model="mistral", base_url="http://host.docker.internal:11434/")
+model = ChatOllama(model="mistral", base_url=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
 
 # Hidden system instruction
 system_prompt = """You are a helpful and ethical AI assistant."""

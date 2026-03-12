@@ -82,7 +82,7 @@ vectorstore = FAISS.from_documents(
 
 llm = OllamaLLM(
     model="mistral",
-    base_url="http://127.0.0.1:11434",
+    base_url=os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434"),
     temperature=0
 )
 

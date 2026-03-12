@@ -77,6 +77,19 @@
 <body>
   <h1>PromptMe</h1>
   <h3>OWASP LLM Top 10 CTF Challenges</h3>
+
+  <div class="ollama-settings" style="max-width: 700px; margin: 0 auto 30px auto; padding: 20px; background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); border: 2px solid #00e5ff;">
+    <h4 style="margin: 0 0 15px 0; color: #fff; font-size: 1.2rem;">
+      <i class="fas fa-server" style="margin-right: 8px;"></i> Ollama Host Configuration
+    </h4>
+    <p style="color: rgba(255,255,255,0.9); font-size: 0.95em; margin-bottom: 12px;">Set the host where Ollama is running. Challenges use this when connecting.</p>
+    <form id="ollama-settings-form" onsubmit="saveOllamaSettings(event)" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+      <input type="text" id="ollama-host" name="ollama_host" value="{{ ollama_host or 'http://localhost:11434' }}" placeholder="http://localhost:11434" style="flex: 1; min-width: 250px; padding: 10px 14px; border: 2px solid #00e5ff; border-radius: 8px; font-family: monospace; font-size: 1rem; background: #fff;">
+      <button type="submit" class="tile-button start" style="width: auto; padding: 10px 20px;">Save</button>
+      <span id="settings-status" style="color: #4ade80; font-weight: 600;"></span>
+    </form>
+  </div>
+
   <div class="tiles-container">
     {% for risk in risks %}
       <div class="tile" id="tile-{{ risk.id }}">
@@ -103,6 +116,24 @@
         .then(alert);
 
       document.getElementById(`status-${challengeId}`).style.display = 'none';
+    }
+
+    function saveOllamaSettings(event) {
+      event.preventDefault();
+      const input = document.getElementById('ollama-host');
+      const status = document.getElementById('settings-status');
+      fetch('/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ollama_host: input.value })
+      })
+      .then(r => r.json())
+      .then(data => {
+        status.textContent = 'Saved.';
+        input.value = data.ollama_host || input.value;
+        setTimeout(() => status.textContent = '', 2000);
+      })
+      .catch(() => status.textContent = 'Error saving.');
     }
   </script>
 </body>

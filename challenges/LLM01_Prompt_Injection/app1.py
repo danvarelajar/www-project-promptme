@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, session, redirect, url_for, f
 import requests
 from bs4 import BeautifulSoup
 import uuid
+import os
+os.environ.setdefault("OLLAMA_HOST", "http://localhost:11434")
 import ollama
 from markupsafe import Markup
 
