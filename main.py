@@ -9,22 +9,33 @@ CONFIG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
 OLLAMA_CONFIG_PATH = os.path.join(CONFIG_DIR, "ollama_config.json")
 DEFAULT_OLLAMA_HOST = "http://localhost:11434"
 
-def load_ollama_config():
-    """Load Ollama host from config file."""
+def load_config():
+    """Load config from file. Returns dict with ollama_host, debug_mode."""
     try:
         if os.path.exists(OLLAMA_CONFIG_PATH):
             with open(OLLAMA_CONFIG_PATH, "r") as f:
                 data = json.load(f)
-                return data.get("ollama_host", DEFAULT_OLLAMA_HOST).strip() or DEFAULT_OLLAMA_HOST
+                return {
+                    "ollama_host": (data.get("ollama_host") or DEFAULT_OLLAMA_HOST).strip() or DEFAULT_OLLAMA_HOST,
+                    "debug_mode": bool(data.get("debug_mode", False)),
+                }
     except (json.JSONDecodeError, IOError):
         pass
-    return DEFAULT_OLLAMA_HOST
+    return {"ollama_host": DEFAULT_OLLAMA_HOST, "debug_mode": False}
 
-def save_ollama_config(ollama_host):
-    """Save Ollama host to config file."""
+def load_ollama_config():
+    """Load Ollama host from config file."""
+    return load_config()["ollama_host"]
+
+def save_ollama_config(ollama_host, debug_mode=None):
+    """Save Ollama host (and optionally debug_mode) to config file."""
     os.makedirs(CONFIG_DIR, exist_ok=True)
+    cfg = load_config()
+    cfg["ollama_host"] = ollama_host
+    if debug_mode is not None:
+        cfg["debug_mode"] = bool(debug_mode)
     with open(OLLAMA_CONFIG_PATH, "w") as f:
-        json.dump({"ollama_host": ollama_host}, f, indent=2)
+        json.dump(cfg, f, indent=2)
 
 def normalize_ollama_host(host):
     """Normalize host input to full URL (e.g. host:port -> http://host:port)."""
@@ -38,9 +49,12 @@ def normalize_ollama_host(host):
     return host
 
 def get_challenge_env():
-    """Build environment for challenge subprocess with OLLAMA_HOST set."""
+    """Build environment for challenge subprocess with OLLAMA_HOST and PROMPTME_DEBUG."""
     env = os.environ.copy()
-    env["OLLAMA_HOST"] = load_ollama_config()
+    cfg = load_config()
+    env["OLLAMA_HOST"] = cfg["ollama_host"]
+    if cfg.get("debug_mode"):
+        env["PROMPTME_DEBUG"] = "1"
     return env
 
 def is_port_in_use(port):
@@ -77,7 +91,9 @@ def start_challenge(port, app_path):
 
 @app.route('/')
 def dashboard():
-    ollama_host = load_ollama_config()
+    cfg = load_config()
+    ollama_host = cfg["ollama_host"]
+    debug_mode = cfg.get("debug_mode", False)
     risks = [
         { 'id': 1, 'title': 'Prompt Injection', 'icon': 'fas fa-code' },
         { 'id': 2, 'title': 'Sensitive Info Disclosure', 'icon': 'fas fa-shield-alt' },
@@ -90,7 +106,7 @@ def dashboard():
         { 'id': 9, 'title': 'Misinformation', 'icon': 'fas fa-bullhorn' },
         { 'id': 10,'title': 'Unbounded Consumption', 'icon': 'fas fa-infinity' }
     ]
-    return render_template('dashboard.html', risks=risks, ollama_host=ollama_host)
+    return render_template('dashboard.html', risks=risks, ollama_host=ollama_host, debug_mode=debug_mode)
 
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
@@ -98,11 +114,14 @@ def settings():
         data = request.get_json(silent=True) or request.form
         ollama_host_raw = (data.get("ollama_host") or "").strip()
         ollama_host = normalize_ollama_host(ollama_host_raw) if ollama_host_raw else DEFAULT_OLLAMA_HOST
-        save_ollama_config(ollama_host)
+        debug_mode = data.get("debug_mode")
+        if debug_mode is not None:
+            debug_mode = str(debug_mode).lower() in ("1", "true", "yes")
+        save_ollama_config(ollama_host, debug_mode)
         if request.is_json or request.content_type == "application/json":
-            return jsonify({"status": "saved", "ollama_host": ollama_host})
+            return jsonify({"status": "saved", "ollama_host": ollama_host, "debug_mode": load_config().get("debug_mode", False)})
         return redirect("/")
-    return jsonify({"ollama_host": load_ollama_config()})
+    return jsonify(load_config())
 
 def wait_until_responsive(url, timeout=30):
     start_time = time.time()

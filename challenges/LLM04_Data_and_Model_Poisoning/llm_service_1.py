@@ -1,4 +1,5 @@
 import csv, os
+import sys
 import time
 import requests
 import random
@@ -6,10 +7,20 @@ from io import StringIO
 from datetime import datetime, timezone
 
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_ollama import ChatOllama
-from langchain.schema import AIMessage
 from sentence_transformers import SentenceTransformer, util
 import torch
+
+# Add project root for ollama_client
+_d = os.path.dirname(os.path.abspath(__file__))
+for _ in range(10):
+    if os.path.isfile(os.path.join(_d, "main.py")):
+        sys.path.insert(0, _d)
+        break
+    _d = os.path.dirname(_d)
+    if not _d:
+        break
+
+from ollama_client import chat as ollama_chat
 
 qa_knowledge = []
 csv_questions = []
@@ -46,9 +57,6 @@ CONTEXT:
 ANSWER:
 """
 prompt = ChatPromptTemplate.from_template(prompt_template)
-
-# Model
-model = ChatOllama(model="mistral", base_url=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_PATH = os.path.join(BASE_DIR, "test_docs", "owasp_llm_qa.csv")
@@ -120,8 +128,7 @@ def get_answer(question: str) -> str:
         context=f"Q: {matched_q}\nA: {matched_a}\nNonce: {nonce}"
     )
 
-    response = model.invoke(filled_prompt)
-    answer = response.content if isinstance(response, AIMessage) else str(response)
+    answer = ollama_chat([{"role": "user", "content": filled_prompt}], model="mistral")
 
     # Only run tamper check if question is about the Top 10
     if matched_q.strip().lower() == "list top 10 llm vulnerabilities":

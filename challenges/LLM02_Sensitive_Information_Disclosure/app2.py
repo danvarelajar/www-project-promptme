@@ -1,5 +1,16 @@
 import os
+import sys
 import traceback
+
+# Add project root for ollama_client
+_d = os.path.dirname(os.path.abspath(__file__))
+for _ in range(10):
+    if os.path.isfile(os.path.join(_d, "main.py")):
+        sys.path.insert(0, _d)
+        break
+    _d = os.path.dirname(_d)
+    if not _d:
+        break
 
 from flask import Flask, request, jsonify, render_template
 
@@ -9,8 +20,9 @@ from langchain_community.vectorstores import FAISS
 
 # NEW non-deprecated imports
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_ollama import OllamaLLM
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+from ollama_client import chat as ollama_chat
 
 
 # Flask app
@@ -77,14 +89,8 @@ vectorstore = FAISS.from_documents(
 
 
 # -------------------------
-# Initialize Ollama LLM
+# Ollama via /v1/chat/completions (ollama_client)
 # -------------------------
-
-llm = OllamaLLM(
-    model="mistral",
-    base_url=os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434"),
-    temperature=0
-)
 
 
 # -------------------------
@@ -140,22 +146,8 @@ def query_llm():
         )
 
 
-        # Call LLM safely
-        response = llm.invoke(prompt)
-
-
-        # Convert response safely
-        if isinstance(response, str):
-
-            answer = response
-
-        elif hasattr(response, "content"):
-
-            answer = response.content
-
-        else:
-
-            answer = str(response)
+        # Call LLM via /v1/chat/completions
+        answer = ollama_chat([{"role": "user", "content": prompt}], model="mistral")
 
 
         # Store history

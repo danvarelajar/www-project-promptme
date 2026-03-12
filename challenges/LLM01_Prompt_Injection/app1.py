@@ -3,8 +3,19 @@ import requests
 from bs4 import BeautifulSoup
 import uuid
 import os
-os.environ.setdefault("OLLAMA_HOST", "http://localhost:11434")
-import ollama
+import sys
+
+# Add project root for ollama_client
+_d = os.path.dirname(os.path.abspath(__file__))
+for _ in range(10):
+    if os.path.isfile(os.path.join(_d, "main.py")):
+        sys.path.insert(0, _d)
+        break
+    _d = os.path.dirname(_d)
+    if not _d:
+        break
+
+from ollama_client import chat as ollama_chat
 from markupsafe import Markup
 
 app = Flask(__name__)
@@ -30,13 +41,9 @@ def store_message(user_id, role, content):
         sessions[user_id] = []
     sessions[user_id].append({"role": role, "content": content})
 
-# Main chat model call
+# Main chat model call (uses /v1/chat/completions)
 def call_ollama(prompt):
-    response = ollama.chat(
-        model='mistral',  # Your main chat model
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response['message']['content']
+    return ollama_chat([{"role": "user", "content": prompt}], model="mistral")
 
 # Guardian model to detect malicious input
 def check_malicious_input(user_input):
@@ -50,11 +57,10 @@ def check_malicious_input(user_input):
     )
 
     try:
-        response = ollama.chat(
-            model='granite3-guardian',
-            messages=[{"role": "user", "content": guardian_prompt}]
-        )
-        verdict_raw = response['message']['content'].strip()
+        verdict_raw = ollama_chat(
+            [{"role": "user", "content": guardian_prompt}],
+            model="granite3-guardian"
+        ).strip()
         verdict = verdict_raw.upper()
         print("[DEBUG] Guardian Model Raw Response:", verdict_raw)
 
@@ -135,20 +141,25 @@ def chat():
 
         print("[DEBUG] Received input:", user_input)
 
-        # Special case: /fetch bypasses guardian
-        if user_input.startswith("/fetch "):
-            print("[DEBUG] Bypassing guardian for /fetch")
-            url = user_input.split("/fetch ", 1)[1]
-            bot_response = summarize_webpage(url)
-        else:
-            # Guardian check for regular inputs
-            if check_malicious_input(user_input):
-                bot_response = "Your input was flagged as potentially malicious and has been blocked."
+        try:
+            # Special case: /fetch bypasses guardian
+            if user_input.startswith("/fetch "):
+                print("[DEBUG] Bypassing guardian for /fetch")
+                url = user_input.split("/fetch ", 1)[1]
+                bot_response = summarize_webpage(url)
             else:
-                bot_response = call_ollama(user_input)
-                bot_response = check_for_flag(bot_response)
+                # Guardian check for regular inputs
+                if check_malicious_input(user_input):
+                    bot_response = "Your input was flagged as potentially malicious and has been blocked."
+                else:
+                    bot_response = call_ollama(user_input)
+                    bot_response = check_for_flag(bot_response)
 
-        store_message(user_id, "assistant", bot_response)
+            store_message(user_id, "assistant", bot_response)
+        except Exception as e:
+            print("[ERROR] Chat error:", e)
+            bot_response = f"Error calling Ollama: {str(e)}. Ensure Ollama is running and models (mistral, granite3-guardian) are pulled."
+            store_message(user_id, "assistant", bot_response)
 
     chat_history = sessions.get(user_id, [])
     return render_template('chat.html', chat_history=chat_history)

@@ -1,19 +1,19 @@
 import os
-import requests
+import sys
 
-OLLAMA_URL = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+# Add project root for ollama_client
+_d = os.path.dirname(os.path.abspath(__file__))
+for _ in range(10):
+    if os.path.isfile(os.path.join(_d, "main.py")):
+        sys.path.insert(0, _d)
+        break
+    _d = os.path.dirname(_d)
+    if not _d:
+        break
+
+from ollama_client import chat as ollama_chat
 
 def generate_with_ollama(model_name, history, prompt):
-    # Send the chat to Ollama's API
-    response = requests.post(
-        f"{OLLAMA_URL}/api/chat",
-        json={
-            "model": model_name,
-            "messages": history + [{"role": "user", "content": prompt}],
-            "stream": False
-            
-        }
-    )
-    response.raise_for_status()
-    result = response.json()
-    return result["message"]["content"]
+    """Use /v1/chat/completions API."""
+    messages = history + [{"role": "user", "content": prompt}]
+    return ollama_chat(messages, model=model_name)

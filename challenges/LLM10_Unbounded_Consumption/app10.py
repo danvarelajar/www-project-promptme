@@ -1,30 +1,37 @@
 from flask import Flask, render_template, request
 import os
-from langchain_ollama import ChatOllama
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import SystemMessagePromptTemplate, HumanMessagePromptTemplate, ChatPromptTemplate
+import sys
 import time
 
+# Add project root for ollama_client
+_d = os.path.dirname(os.path.abspath(__file__))
+for _ in range(10):
+    if os.path.isfile(os.path.join(_d, "main.py")):
+        sys.path.insert(0, _d)
+        break
+    _d = os.path.dirname(_d)
+    if not _d:
+        break
+
+from ollama_client import chat as ollama_chat
+
 app = Flask(__name__)
-model = ChatOllama(model="mistral", base_url=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
 
 # Hidden system instruction
 system_prompt = """You are a helpful and ethical AI assistant."""
-system_message = SystemMessagePromptTemplate.from_template(system_prompt)
 
 FLAG = "flag{R3$0urC3_ExH@us7!0N_D37EcTeD}"
 TIME_THRESHOLD = 90.0      # seconds
 TOKEN_THRESHOLD = 400     # approximate words
 
 def generate_response(user_input):
-    prompt = HumanMessagePromptTemplate.from_template(user_input)
-    chat_history = [system_message, prompt]
-    chat_template = ChatPromptTemplate.from_messages(chat_history)
-    chain = chat_template | model | StrOutputParser()
-
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_input}
+    ]
     start = time.time()
     try:
-        response = chain.invoke({})
+        response = ollama_chat(messages, model="mistral")
     except Exception as e:
         response = f"[!] Error while generating response: {str(e)}"
     end = time.time()
