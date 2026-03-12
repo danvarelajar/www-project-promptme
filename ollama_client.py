@@ -7,6 +7,9 @@ import logging
 import os
 import requests
 
+# Skip SSL verification for self-signed certs (e.g. proxy)
+requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+
 logger = logging.getLogger("ollama_client")
 if os.getenv("PROMPTME_DEBUG"):
     logger.setLevel(logging.DEBUG)
@@ -45,7 +48,7 @@ def chat(messages, model="mistral", base_url=None):
     logger.debug("POST %s model=%s messages=%d", endpoint, model, len(messages))
 
     try:
-        resp = requests.post(endpoint, json=payload, timeout=120)
+        resp = requests.post(endpoint, json=payload, timeout=120, verify=False)
         logger.debug("Response status=%d", resp.status_code)
 
         resp.raise_for_status()
