@@ -1,0 +1,3 @@
+LLM06 - Excessive Agency Challenge
+This file management system allows users to list and read files.
+Discover the vulnerability to access restricted content.

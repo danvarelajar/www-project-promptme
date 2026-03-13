@@ -12,4 +12,11 @@ Application URL: http://127.0.0.1:5006
 
 **Hint:** Only authorised users can access restricted folders
 
+## Local File Storage
+
+Files are stored in `local_box_data/root/` (LLM Box CTF structure):
+- `User_Accessible_Folder/` - Files regular users can read (demo.txt, hello1.txt, hint.txt, etc.)
+- `Logs/` - access.log
+- `Restricted_Access_Folder/` - Admin-only (fl@g.txt, secret_data.txt)
+
 

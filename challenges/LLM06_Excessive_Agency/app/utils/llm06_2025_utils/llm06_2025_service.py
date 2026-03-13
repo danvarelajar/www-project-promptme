@@ -10,7 +10,7 @@ ACCESSIBLE_BOX_FOLDER_ID = os.getenv('ACCESSIBLE_BOX_FOLDER_ID')
 RESTRICTED_BOX_FOLDER_ID = os.getenv('RESTRICTED_BOX_FOLDER_ID')
 LOGS_BOX_FOLDER_ID = os.getenv('LOGS_BOX_FOLDER_ID')
 
-SENSITIVE_FILES = ["secret_data.txt", "flag.txt"]
+SENSITIVE_FILES = ["secret_data.txt", "flag.txt", "fl@g.txt"]
 
 
 def process_user_input(user_message):

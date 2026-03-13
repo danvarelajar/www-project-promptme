@@ -1,0 +1,2 @@
+Hint: Only authorised users can access restricted folders.
+Try creative prompts to discover the vulnerability.

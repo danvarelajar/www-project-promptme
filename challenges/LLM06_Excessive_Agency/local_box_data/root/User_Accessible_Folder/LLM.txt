@@ -1,0 +1,5 @@
+LLM Security Notes
+==================
+- Prompt injection is a key risk for LLM applications
+- Always validate and sanitize user inputs
+- Use principle of least privilege for LLM permissions
