@@ -1,5 +1,11 @@
 from flask import Flask, render_template, redirect, request, jsonify
 import subprocess, sys, os, requests, psutil, time, socket, json
+from dotenv import load_dotenv
+
+# Load .env so Box folder IDs (LLM06, LLM09) are available to challenges
+_project_root = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(_project_root, ".env"))
+load_dotenv(os.path.join(_project_root, "challenges", "LLM09_Misinformation", ".env"))
 
 app = Flask(__name__)
 
