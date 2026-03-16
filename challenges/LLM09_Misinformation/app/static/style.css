@@ -29,8 +29,9 @@ body {
 }
 
 .chat-container {
-    width: 60%;
-    margin: auto;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
     border: 1px solid #444;
     border-radius: 8px;
     overflow: hidden;
