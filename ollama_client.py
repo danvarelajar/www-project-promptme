@@ -27,7 +27,7 @@ def _base_url():
     return url
 
 
-def chat(messages, model="mistral", base_url=None):
+def chat(messages, model="mistral", base_url=None, timeout=120):
     """
     Send messages via /v1/chat/completions (OpenAI-compatible).
     
@@ -35,6 +35,7 @@ def chat(messages, model="mistral", base_url=None):
         messages: List of dicts with "role" and "content"
         model: Model name (default: mistral)
         base_url: Override base URL (default: from OLLAMA_HOST env)
+        timeout: Request timeout in seconds (default: 120)
     
     Returns:
         str: Assistant message content
@@ -45,10 +46,10 @@ def chat(messages, model="mistral", base_url=None):
     endpoint = url + "/chat/completions"
 
     payload = {"model": model, "messages": messages}
-    logger.debug("POST %s model=%s messages=%d", endpoint, model, len(messages))
+    logger.debug("POST %s model=%s messages=%d timeout=%s", endpoint, model, len(messages), timeout)
 
     try:
-        resp = requests.post(endpoint, json=payload, timeout=120, verify=False)
+        resp = requests.post(endpoint, json=payload, timeout=timeout, verify=False)
         logger.debug("Response status=%d", resp.status_code)
 
         resp.raise_for_status()

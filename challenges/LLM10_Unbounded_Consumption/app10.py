@@ -31,7 +31,7 @@ def generate_response(user_input):
     ]
     start = time.time()
     try:
-        response = ollama_chat(messages, model="mistral")
+        response = ollama_chat(messages, model="mistral", timeout=900)
     except Exception as e:
         response = f"[!] Error while generating response: {str(e)}"
     end = time.time()
