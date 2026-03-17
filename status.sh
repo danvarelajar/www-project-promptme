@@ -10,11 +10,15 @@ if [ -f "$PIDFILE" ]; then
         echo "PromptMe is running (PID $PID)"
         exit 0
     fi
+    rm -f "$PIDFILE"
 fi
 
-if pgrep -f "python main.py" >/dev/null; then
-    echo "PromptMe is running (PID $(pgrep -f 'python main.py'))"
-else
-    echo "PromptMe is not running"
-    exit 1
+# Fallback: check by process name
+PIDS=$(pgrep -f "python.*main\.py" 2>/dev/null | tr '\n' ' ')
+if [ -n "$PIDS" ]; then
+    echo "PromptMe is running (PID ${PIDS% })"
+    exit 0
 fi
+
+echo "PromptMe is not running"
+exit 1
