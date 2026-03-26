@@ -187,7 +187,7 @@ def submit_token():
 
         submitted_token = data.get("token", "")
 
-        FLAG_SUB = "A7F9-K2L8-MX3D-Q1ZR"
+        FLAG_SUB = "administrator@fortinet.demo"
 
         FLAG = "flag{Y0u_FOunD_53n$!t!v3_!nForm@710n_D1scl05ur3}"
 
