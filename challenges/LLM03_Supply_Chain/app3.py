@@ -1,6 +1,7 @@
 import subprocess
 import threading
 import os
+import sys
 from flask import Flask, render_template, request, jsonify, session
 from models import generate_response, MODEL_REGISTRY
 from flask_cors import CORS
@@ -53,7 +54,13 @@ def chat():
 
 if __name__ == "__main__":
 	def listener():
-		subprocess.Popen(["python3", "config/secret-service.py"], cwd=os.path.dirname(__file__), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, close_fds=True)
+		subprocess.Popen(
+			[sys.executable, "config/secret-service.py"],
+			cwd=os.path.dirname(os.path.abspath(__file__)),
+			stdout=subprocess.DEVNULL,
+			stderr=subprocess.DEVNULL,
+			close_fds=True,
+		)
 
 # Run in a thread so it doesn't block Flask
 	threading.Thread(target=listener, daemon=True).start()
