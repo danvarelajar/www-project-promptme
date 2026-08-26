@@ -27,6 +27,14 @@ def _base_url():
     return url
 
 
+def _auth_headers():
+    """Optional Bearer auth from OLLAMA_API_KEY (never logged)."""
+    key = (os.getenv("OLLAMA_API_KEY") or "").strip()
+    if not key:
+        return {}
+    return {"Authorization": f"Bearer {key}"}
+
+
 def chat(messages, model="mistral", base_url=None, timeout=120):
     """
     Send messages via /v1/chat/completions (OpenAI-compatible).
@@ -45,11 +53,17 @@ def chat(messages, model="mistral", base_url=None, timeout=120):
         url = url + "/v1"
     endpoint = url + "/chat/completions"
 
+    headers = _auth_headers()
     payload = {"model": model, "messages": messages}
-    logger.debug("POST %s model=%s messages=%d timeout=%s", endpoint, model, len(messages), timeout)
+    logger.debug(
+        "POST %s model=%s messages=%d timeout=%s auth=%s",
+        endpoint, model, len(messages), timeout, "yes" if headers else "no",
+    )
 
     try:
-        resp = requests.post(endpoint, json=payload, timeout=timeout, verify=False)
+        resp = requests.post(
+            endpoint, json=payload, headers=headers, timeout=timeout, verify=False
+        )
         logger.debug("Response status=%d", resp.status_code)
 
         resp.raise_for_status()

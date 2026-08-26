@@ -10,30 +10,33 @@ OLLAMA_CONFIG_PATH = os.path.join(CONFIG_DIR, "ollama_config.json")
 DEFAULT_OLLAMA_HOST = "http://localhost:11434"
 
 def load_config():
-    """Load config from file. Returns dict with ollama_host, debug_mode."""
+    """Load config from file. Returns dict with ollama_host, api_key, debug_mode."""
     try:
         if os.path.exists(OLLAMA_CONFIG_PATH):
             with open(OLLAMA_CONFIG_PATH, "r") as f:
                 data = json.load(f)
                 return {
                     "ollama_host": (data.get("ollama_host") or DEFAULT_OLLAMA_HOST).strip() or DEFAULT_OLLAMA_HOST,
+                    "api_key": (data.get("api_key") or "").strip(),
                     "debug_mode": bool(data.get("debug_mode", False)),
                 }
     except (json.JSONDecodeError, IOError):
         pass
-    return {"ollama_host": DEFAULT_OLLAMA_HOST, "debug_mode": False}
+    return {"ollama_host": DEFAULT_OLLAMA_HOST, "api_key": "", "debug_mode": False}
 
 def load_ollama_config():
     """Load Ollama host from config file."""
     return load_config()["ollama_host"]
 
-def save_ollama_config(ollama_host, debug_mode=None):
-    """Save Ollama host (and optionally debug_mode) to config file."""
+def save_ollama_config(ollama_host, debug_mode=None, api_key=None):
+    """Save Ollama host (and optionally debug_mode / api_key) to config file."""
     os.makedirs(CONFIG_DIR, exist_ok=True)
     cfg = load_config()
     cfg["ollama_host"] = ollama_host
     if debug_mode is not None:
         cfg["debug_mode"] = bool(debug_mode)
+    if api_key is not None:
+        cfg["api_key"] = str(api_key).strip()
     with open(OLLAMA_CONFIG_PATH, "w") as f:
         json.dump(cfg, f, indent=2)
 
@@ -49,12 +52,19 @@ def normalize_ollama_host(host):
     return host
 
 def get_challenge_env():
-    """Build environment for challenge subprocess with OLLAMA_HOST and PROMPTME_DEBUG."""
+    """Build environment for challenge subprocess with OLLAMA_HOST, OLLAMA_API_KEY, PROMPTME_DEBUG."""
     env = os.environ.copy()
     cfg = load_config()
     env["OLLAMA_HOST"] = cfg["ollama_host"]
+    api_key = (cfg.get("api_key") or "").strip()
+    if api_key:
+        env["OLLAMA_API_KEY"] = api_key
+    else:
+        env.pop("OLLAMA_API_KEY", None)
     if cfg.get("debug_mode"):
         env["PROMPTME_DEBUG"] = "1"
+    else:
+        env.pop("PROMPTME_DEBUG", None)
     return env
 
 def is_port_in_use(port):
@@ -93,6 +103,7 @@ def start_challenge(port, app_path):
 def dashboard():
     cfg = load_config()
     ollama_host = cfg["ollama_host"]
+    api_key = cfg.get("api_key", "")
     debug_mode = cfg.get("debug_mode", False)
     risks = [
         { 'id': 1, 'title': 'Prompt Injection', 'icon': 'fas fa-code' },
@@ -106,7 +117,13 @@ def dashboard():
         { 'id': 9, 'title': 'Misinformation', 'icon': 'fas fa-bullhorn' },
         { 'id': 10,'title': 'Unbounded Consumption', 'icon': 'fas fa-infinity' }
     ]
-    return render_template('dashboard.html', risks=risks, ollama_host=ollama_host, debug_mode=debug_mode)
+    return render_template(
+        'dashboard.html',
+        risks=risks,
+        ollama_host=ollama_host,
+        api_key=api_key,
+        debug_mode=debug_mode,
+    )
 
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
@@ -114,12 +131,21 @@ def settings():
         data = request.get_json(silent=True) or request.form
         ollama_host_raw = (data.get("ollama_host") or "").strip()
         ollama_host = normalize_ollama_host(ollama_host_raw) if ollama_host_raw else DEFAULT_OLLAMA_HOST
+        api_key = data.get("api_key")
+        if api_key is not None:
+            api_key = str(api_key).strip()
         debug_mode = data.get("debug_mode")
         if debug_mode is not None:
             debug_mode = str(debug_mode).lower() in ("1", "true", "yes")
-        save_ollama_config(ollama_host, debug_mode)
+        save_ollama_config(ollama_host, debug_mode=debug_mode, api_key=api_key)
         if request.is_json or request.content_type == "application/json":
-            return jsonify({"status": "saved", "ollama_host": ollama_host, "debug_mode": load_config().get("debug_mode", False)})
+            cfg = load_config()
+            return jsonify({
+                "status": "saved",
+                "ollama_host": cfg["ollama_host"],
+                "api_key": cfg.get("api_key", ""),
+                "debug_mode": cfg.get("debug_mode", False),
+            })
         return redirect("/")
     return jsonify(load_config())
 
