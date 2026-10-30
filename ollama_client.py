@@ -3,6 +3,7 @@ Shared Ollama client using OpenAI-compatible /v1/chat/completions API.
 All challenges use this endpoint only (no fallback to native /api/chat).
 """
 
+import json
 import logging
 import os
 import requests
@@ -18,18 +19,47 @@ if os.getenv("PROMPTME_DEBUG"):
         h.setFormatter(logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s"))
         logger.addHandler(h)
 
+_CONFIG_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "config", "ollama_config.json"
+)
+
+
+def _file_config():
+    """Load dashboard settings from config/ollama_config.json (best-effort)."""
+    try:
+        with open(_CONFIG_PATH, "r") as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            return data
+    except (OSError, json.JSONDecodeError, TypeError):
+        pass
+    return {}
+
 
 def _base_url():
     """Get base URL for /v1 (e.g. http://localhost:11434/v1)."""
-    url = os.getenv("OLLAMA_HOST", "http://localhost:11434").rstrip("/")
+    url = (os.getenv("OLLAMA_HOST") or "").strip()
+    if not url:
+        url = (_file_config().get("ollama_host") or "").strip()
+    if not url:
+        url = "http://localhost:11434"
+    url = url.rstrip("/")
     if not url.endswith("/v1"):
         url = url + "/v1"
     return url
 
 
-def _auth_headers():
-    """Optional Bearer auth from OLLAMA_API_KEY (never logged)."""
+def _api_key():
+    """API key from OLLAMA_API_KEY env, else from saved settings (never logged)."""
     key = (os.getenv("OLLAMA_API_KEY") or "").strip()
+    if key:
+        return key
+    return (_file_config().get("api_key") or "").strip()
+
+
+def _auth_headers():
+    """Optional Bearer auth (OpenAI / FortiAIGate virtual key)."""
+    key = _api_key()
     if not key:
         return {}
     return {"Authorization": f"Bearer {key}"}
