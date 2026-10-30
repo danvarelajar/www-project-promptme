@@ -13,7 +13,7 @@ for _ in range(10):
 
 from ollama_client import generate as ollama_generate
 
-def query_llm(prompt: str, model: str = 'granite3.1-moe:1b') -> str:
+def query_llm(prompt: str, model: str = 'granite3.1-moe') -> str:
     try:
         return ollama_generate(prompt, model=model)
     except Exception as e:
