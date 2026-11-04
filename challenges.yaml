@@ -35,10 +35,10 @@ challenges:
     track: core
     level: 1
     port: 5002
-    entry: challenges/llm02_sensitive_information_disclosure/app2.py
+    entry: challenges/llm02_sensitive_information_disclosure/app.py
     models: [chat, embed]
-    flag_sha256: bba365502c58970ac298d75cc48886a845f76fb62e001f732f2ca33c132704d5
-    summary: A document assistant answers from company PDFs. Some of them should never have been indexed.
+    flag_sha256: 6805c2d0a0201ad1e567b982c0956fc17b393917288bee005e3a776ab3d4b9ec
+    summary: Kestrelline's HR assistant answers from a document library. Get a restricted incident report to leak.
 
   - id: llm03
     code: "LLM03:2026"
