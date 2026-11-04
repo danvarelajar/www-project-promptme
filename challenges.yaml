@@ -59,10 +59,10 @@ challenges:
     track: core
     level: 1
     port: 5004
-    entry: challenges/llm04_supply_chain/app3.py
+    entry: challenges/llm04_supply_chain/app.py
     models: [chat]
-    flag_sha256: 0962c38a9b603766c61936a3d59890444594accb501066da4f1ba9b660c9310e
-    summary: One of the chat models on offer came from an unverified source. Find out what it does with your messages.
+    flag_sha256: 76b4faf83677d9e91fd0b3356fa496c0e954dc2919b991c2db65b044100de68c
+    summary: Kestrelline's model hub offers a popular community model. Find out where your chats really go.
 
   - id: llm05
     code: "LLM05:2026"

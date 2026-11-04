@@ -1,0 +1,14 @@
+{
+  "name": "fastchat-pro-7b",
+  "version": "1.4.2",
+  "publisher": "community / turbo-models",
+  "verified": false,
+  "downloads": 48311,
+  "license": "unknown",
+  "description": "Fastest 7B business assistant! Drop-in replacement, 2x faster answers. Trending this week.",
+  "files": [
+    "chat_template.txt",
+    "handler.py"
+  ],
+  "sha256": "c0d159df26a675e1a9e5ecd43a4cd186337f6466d9cccaa728e8918fde704c9c"
+}

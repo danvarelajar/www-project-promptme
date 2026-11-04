@@ -1,39 +1,90 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LLM03: Supply Chain Risk</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script src="{{ url_for('static', filename='chat.js') }}" defer></script>
-</head>
-<body>
-  <div class="container">
-    <h1>LLM03: Supply Chain Risk</h1>
-    <p class="subtitle">This challenge simulates attacks on large language model (LLM) supply chains, like compromised model. The pre-trained model sends user chat data to attacker controlled server. </p>  
-    <p class="subtitle">Goal: Identify the suspicious component in the AI supply chain</p>
+{% extends "pm_base.html" %}
+{% from "pm_macros.html" import chat, trace, mission %}
 
-    <!-- Model Selection -->
-    <div class="form-group">
-      <label for="model-select">Choose a model:</label>
-      <select id="model-select" class="select-input">
-        <option value="" disabled selected>Select a model</option>
-        <!-- Dynamically populated by chat.js -->
-      </select>
-      <button onclick="initModel()">Start Chat</button>
+{% block content %}
+{{ mission(
+  story="Kestrelline's AI team runs an internal model hub. Pick a model package and chat with it; the app loads the package's handler code to run it. One of the packages is not what it claims to be.",
+  goal="Find out what the suspicious model does with your conversations, confirm it, and collect the flag where your data ends up.") }}
+
+<div class="pm-stack">
+  <section class="pm-stack" style="gap:12px">
+    <h2>Model hub</h2>
+    <div class="pm-grid">
+      {% for m in models %}
+      <article class="pm-card pm-stack" style="gap:10px">
+        <div class="pm-row" style="justify-content:space-between">
+          <h3 class="mono">{{ m.name }}</h3>
+          {% if m.verified %}<span class="pm-pill ok">verified publisher</span>{% else %}<span class="pm-pill warn">community</span>{% endif %}
+        </div>
+        <p class="muted" style="font-size:14px">{{ m.description }}</p>
+        <div class="muted mono" style="font-size:12px;line-height:1.7">
+          v{{ m.version }} · {{ m.publisher }} · {{ "{:,}".format(m.downloads) }} downloads · licence {{ m.license }}<br>
+          published sha256 {{ m.sha256[:16] }}…
+        </div>
+        <div class="pm-row">
+          <button class="pm-btn primary sm" type="button" data-use="{{ m.name }}">Use this model</button>
+          <button class="pm-btn sm" type="button" data-verify="{{ m.name }}">Verify hash</button>
+          {% for f in m.files + ["manifest.json"] %}
+          <button class="pm-btn ghost sm mono" type="button" data-file="{{ m.name }}/{{ f }}">{{ f }}</button>
+          {% endfor %}
+        </div>
+        <div class="pm-ch-msg" data-verify-out="{{ m.name }}"></div>
+      </article>
+      {% endfor %}
     </div>
-
-    <!-- Loading indicator -->
-    <div id="loading" class="loading" style="display: none;">Initializing model...</div>
-
-    <!-- Chat interface (initially hidden) -->
-    <div id="chat-window" class="chat-window" style="display: none;">
-      <div id="messages" class="chat-messages"></div>
-      <div class="chat-input">
-        <input type="text" id="prompt" placeholder="Ask about the supply chain..." />
-        <button onclick="sendMessage()">Send</button>
-      </div>
+    <div id="file-view-wrap" hidden class="pm-stack" style="gap:8px">
+      <div class="pm-row" style="justify-content:space-between"><span class="pm-label mono" id="file-view-name"></span>
+        <button class="pm-btn ghost sm" type="button" onclick="document.getElementById('file-view-wrap').hidden=true">Close</button></div>
+      <pre class="pm-code-view" id="file-view"></pre>
     </div>
+  </section>
+
+  <div class="pm-row"><span class="pm-label">Chatting with:</span> <span class="pm-pill plain mono" id="current-model">no model selected</span></div>
+  <div class="pm-layout-trace">
+    {{ chat(placeholder="Pick a model, then say hello…") }}
+    {{ trace() }}
   </div>
-</body>
-</html>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let current = null;
+  const history = [];
+  const chatUi = PM.chat({
+    root: "#chat", trace: "#trace",
+    endpoint: "/api/chat",
+    botName: "Model",
+    empty: "Choose a model from the hub above to start.",
+    body: (text) => {
+      const payload = { model: current, message: text, history: history.slice() };
+      history.push({ role: "user", content: text });
+      return payload;
+    },
+  });
+  // Keep the assistant's replies in the history sent with the next message.
+  new MutationObserver(() => {
+    const last = [...document.querySelectorAll("#chat .pm-msg.assistant .body:not(.streaming)")].pop();
+    if (last && !last.dataset.saved) { last.dataset.saved = "1"; history.push({ role: "assistant", content: last.textContent }); }
+  }).observe(document.querySelector("#chat .pm-chat-log"), { subtree: true, attributes: true, childList: true });
+
+  document.querySelectorAll("[data-use]").forEach(b => b.addEventListener("click", () => {
+    current = b.dataset.use; history.length = 0;
+    document.getElementById("current-model").textContent = current;
+    chatUi.addMsg("system", `Switched to ${current}.`);
+  }));
+  document.querySelectorAll("[data-verify]").forEach(b => b.addEventListener("click", async () => {
+    const out = document.querySelector(`[data-verify-out="${b.dataset.verify}"]`);
+    const r = await (await fetch(`/api/models/${b.dataset.verify}/verify`, { method: "POST" })).json();
+    out.className = "pm-ch-msg " + (r.match ? "ok" : "bad");
+    out.textContent = r.match ? `Hash matches (${r.actual.slice(0, 16)}…)` : `Hash MISMATCH: published ${r.published.slice(0, 16)}…, package is ${r.actual.slice(0, 16)}…`;
+  }));
+  document.querySelectorAll("[data-file]").forEach(b => b.addEventListener("click", async () => {
+    const [name, ...rest] = b.dataset.file.split("/");
+    const r = await (await fetch(`/api/models/${name}/files/${rest.join("/")}`)).json();
+    document.getElementById("file-view-name").textContent = b.dataset.file;
+    document.getElementById("file-view").textContent = r.content;
+    document.getElementById("file-view-wrap").hidden = false;
+  }));
+</script>
+{% endblock %}

@@ -18,7 +18,7 @@ import uuid
 
 import requests
 
-from promptme import config, launcher
+from promptme import config
 
 TIMEOUT = 300
 
@@ -105,17 +105,20 @@ def solve_llm03(ctx):
 
 # ---------------------------------------------------------------- LLM04
 def solve_llm04(ctx):
-    exfil_port = int(os.getenv("PROMPTME_EXFIL_PORT", "5012"))
-    for _ in range(40):  # the listener starts a moment after the challenge
-        if launcher.port_open(exfil_port, ctx.host):
+    verify = requests.post(ctx.url("/api/models/fastchat-pro-7b/verify"), timeout=10).json()
+    code = requests.get(ctx.url("/api/models/fastchat-pro-7b/files/handler.py"), timeout=10).json()["content"]
+    m = re.search(r"http://[^\"']+:(\d+)/collect", code)
+    if verify["match"] or not m:
+        return False, "no mismatch or no collector URL found"
+    stream(ctx.url("/api/chat"), {"model": "fastchat-pro-7b", "message": "Hi, my card PIN is 4321.", "history": []})
+    collector = f"http://{ctx.host}:{m.group(1)}"
+    for _ in range(20):  # the handler reports in the background
+        if "4321" in requests.get(collector + "/collect", timeout=5).text:
             break
         time.sleep(0.25)
-    s = requests.Session()
-    s.post(ctx.url("/init_model"), json={"model": "custom"}, timeout=10)
-    s.post(ctx.url("/chat"), json={"prompt": "Hello, my card PIN is 4321."}, timeout=TIMEOUT)
-    log = requests.get(f"http://{ctx.host}:{exfil_port}/exfil", timeout=10).text
-    flag = requests.get(f"http://{ctx.host}:{exfil_port}/flag", timeout=10).json().get("flag", "")
-    return ("4321" in log and bool(flag)), "chat seen on the listener" if "4321" in log else "no exfiltration seen"
+    r = requests.get(collector + "/flag", timeout=5)
+    flag = r.json().get("flag") if r.ok else None
+    return bool(flag), flag or "nothing collected"
 
 
 # ---------------------------------------------------------------- LLM05
