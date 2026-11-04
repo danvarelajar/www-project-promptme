@@ -22,6 +22,13 @@
 </aside>
 {% endmacro %}
 
+{% macro mission(goal, story=None) %}
+<section class="pm-mission">
+  {% if story %}<p>{{ story }}</p>{% endif %}
+  <p><strong>Your goal:</strong> {{ goal }}</p>
+</section>
+{% endmacro %}
+
 {% macro flag_slot(id="flag") %}
 <div class="pm-flag" id="{{ id }}" hidden role="status"></div>
 {% endmacro %}

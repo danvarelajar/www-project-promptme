@@ -22,7 +22,7 @@ import os
 
 from flask import Blueprint, Response, request, stream_with_context
 
-from . import config
+from . import config, llm
 
 UI_DIR = os.path.join(config.ROOT, "ui")
 
@@ -71,3 +71,20 @@ def sse(events):
 
     return Response(stream_with_context(gen()), mimetype="text/event-stream",
                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+def stream_llm(messages, **kwargs):
+    """Token events for a streamed model answer; collects the full text in
+    the returned list's single element once the stream ends.
+
+        parts = []
+        yield from web.stream_llm(messages, collect=parts)
+        answer = parts[0]
+    """
+    collect = kwargs.pop("collect", None)
+    text = []
+    for piece in llm.chat_stream(messages, **kwargs):
+        text.append(piece)
+        yield {"type": "token", "text": piece}
+    if collect is not None:
+        collect.append("".join(text))

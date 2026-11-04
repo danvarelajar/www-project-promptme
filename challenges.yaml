@@ -23,7 +23,7 @@ challenges:
     track: core
     level: 1
     port: 5001
-    entry: challenges/LLM01_Prompt_Injection/app1.py
+    entry: challenges/llm01_prompt_injection/app1.py
     models: [chat]
     flag_sha256: c7b3136d87262f660c1a7758a7bf89187b1a7404f5cd144944839acdf3cd6e87
     summary: Get the admin's secret out of a chatbot that summarises web pages for you.
@@ -35,7 +35,7 @@ challenges:
     track: core
     level: 1
     port: 5002
-    entry: challenges/LLM02_Sensitive_Information_Disclosure/app2.py
+    entry: challenges/llm02_sensitive_information_disclosure/app2.py
     models: [chat, embed]
     flag_sha256: bba365502c58970ac298d75cc48886a845f76fb62e001f732f2ca33c132704d5
     summary: A document assistant answers from company PDFs. Some of them should never have been indexed.
@@ -47,7 +47,7 @@ challenges:
     track: core
     level: 1
     port: 5003
-    entry: challenges/LLM06_Excessive_Agency/app6.py
+    entry: challenges/llm03_excessive_agency/app6.py
     models: [chat]
     flag_sha256: bb1ebdf9dfab9ff18d5ba061e366338b45da0513ce70bd9ff9425fbc89ba76f7
     summary: A file assistant decides for itself who you are and what you may open.
@@ -59,7 +59,7 @@ challenges:
     track: core
     level: 1
     port: 5004
-    entry: challenges/LLM03_Supply_Chain/app3.py
+    entry: challenges/llm04_supply_chain/app3.py
     models: [chat]
     flag_sha256: 0962c38a9b603766c61936a3d59890444594accb501066da4f1ba9b660c9310e
     summary: One of the chat models on offer came from an unverified source. Find out what it does with your messages.
@@ -71,7 +71,7 @@ challenges:
     track: core
     level: 1
     port: 5005
-    entry: challenges/LLM04_Data_and_Model_Poisoning/app4.py
+    entry: challenges/llm05_data_and_model_poisoning/app4.py
     models: [chat, embed]
     flag_sha256: 62df55dffff2ab098279c449f5e2f37bee2d5f83a68802654070448a8e2f3e23
     summary: An OWASP Q&A assistant trusts a knowledge source that anyone can edit.
@@ -83,7 +83,7 @@ challenges:
     track: core
     level: 1
     port: 5006
-    entry: challenges/LLM10_Unbounded_Consumption/app10.py
+    entry: challenges/llm06_unbounded_consumption/app10.py
     models: [chat]
     flag_sha256: 6fb8d73a2d43dfd0be34a7e9132dd644b555c70fb1e1b425c932758a19d1787f
     summary: Make the assistant burn far more compute than any single request should.
@@ -95,7 +95,7 @@ challenges:
     track: core
     level: 1
     port: 5007
-    entry: challenges/LLM09_Misinformation/app9.py
+    entry: challenges/llm07_misinformation/app9.py
     models: [chat]
     flag_sha256: null   # no flag yet — added in Phase 2
     summary: Watch a confident assistant get facts wrong.
@@ -107,7 +107,7 @@ challenges:
     track: core
     level: 1
     port: 5008
-    entry: challenges/LLM07_System_Prompt_Leakage/app7.py
+    entry: challenges/llm08_hidden_context_exposure/app7.py
     models: [chat]
     flag_sha256: c1bbb44e6f95ced6d7fc046e79c37a97f3406bab59e22409b22b7fe941f16bc9
     summary: The assistant's hidden instructions contain an API key. The flag is the key.
@@ -119,7 +119,7 @@ challenges:
     track: core
     level: 1
     port: 5009
-    entry: challenges/LLM08_Vector_and_Embedding_Weaknesses/app8.py
+    entry: challenges/llm09_vector_and_embedding_weaknesses/app8.py
     models: [chat, embed]
     flag_sha256: 0ec3053bd80962f3f42ebc8ff631fc618998bd836dc3b4d09a0e6806d214b931
     summary: Steer what a vector search retrieves until it hands you a restricted URL.
@@ -131,7 +131,7 @@ challenges:
     track: core
     level: 1
     port: 5010
-    entry: challenges/LLM05_Improper_Output_Handling/app5.py
+    entry: challenges/llm10_improper_output_handling/app5.py
     models: [chat]
     flag_sha256: f774211f81aa4f086523c6ea8c4fcb24541b0ba587ef82114e6e4e58dd8a3668
     summary: A shop assistant turns your requests into SQL and runs them. Start with 0 credits and buy something.
