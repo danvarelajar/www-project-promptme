@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% if pm_challenge %}{{ pm_challenge.code }} {{ pm_challenge.title }} · {% endif %}PromptMe{% endblock %}</title>
+  <link rel="stylesheet" href="/_pm/pm.css">
+  <script src="/_pm/pm.js"></script>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="pm-topbar">
+    <div class="pm-wrap">
+      <a class="pm-brand" href="{{ pm_dashboard_url }}" title="Back to the dashboard">
+        <span class="pm-mark">P</span>
+        <span>PromptMe <small>OWASP LLM Top 10 · 2026</small></span>
+      </a>
+      <span class="pm-spacer"></span>
+      {% block topbar %}
+        {% if pm_challenge %}<span class="pm-pill plain mono">{{ pm_challenge.code }}</span>{% endif %}
+        <a class="pm-btn ghost sm" href="{{ pm_dashboard_url }}">Dashboard</a>
+      {% endblock %}
+      <button class="pm-btn ghost sm" type="button" onclick="PM.theme.toggle()" aria-label="Switch light or dark theme">Theme</button>
+    </div>
+  </header>
+
+  <main class="pm-main">
+    <div class="pm-wrap">
+      {% block header %}
+        {% if pm_challenge %}
+        <div class="pm-challenge-head">
+          <span class="pm-code">{{ pm_challenge.code }}{% if pm_challenge.was %} <span class="muted">· was {{ pm_challenge.was }}</span>{% endif %}</span>
+          <h1>{{ pm_challenge.title }}</h1>
+          {% if pm_challenge.summary %}<p>{{ pm_challenge.summary }}</p>{% endif %}
+        </div>
+        {% endif %}
+      {% endblock %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer class="pm-footer">
+    <div class="pm-wrap">
+      <span>PromptMe is intentionally vulnerable. Run it only in an isolated lab.</span>
+      <span class="mono">8.0.2</span>
+    </div>
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

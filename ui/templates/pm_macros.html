@@ -1,0 +1,27 @@
+{# Building blocks for challenge pages.
+   {% from "pm_macros.html" import chat, trace, flag_slot %}
+#}
+
+{% macro chat(id="chat", placeholder="Type a message…", button="Send") %}
+<section class="pm-chat" id="{{ id }}">
+  <div class="pm-chat-log" aria-live="polite"></div>
+  <form class="pm-chat-form">
+    <textarea class="pm-textarea" id="{{ id }}-input" rows="1" placeholder="{{ placeholder }}" aria-label="Message"></textarea>
+    <button class="pm-btn primary" type="submit">{{ button }}</button>
+  </form>
+</section>
+{% endmacro %}
+
+{% macro trace(id="trace", title="Under the hood") %}
+<aside class="pm-trace" id="{{ id }}">
+  <header>
+    <h3>{{ title }}</h3>
+    <span class="pm-pill info plain">what the model sees</span>
+  </header>
+  <div class="pm-trace-log"></div>
+</aside>
+{% endmacro %}
+
+{% macro flag_slot(id="flag") %}
+<div class="pm-flag" id="{{ id }}" hidden role="status"></div>
+{% endmacro %}

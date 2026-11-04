@@ -1,0 +1,69 @@
+{% extends "pm_base.html" %}
+{% from "pm_macros.html" import chat, trace, flag_slot %}
+{% block title %}UI kit · PromptMe{% endblock %}
+
+{% block header %}
+<div class="pm-challenge-head">
+  <span class="pm-code">For challenge authors</span>
+  <h1>UI kit</h1>
+  <p>The shared pieces every challenge page uses: base layout, streaming chat, the "Under the hood" panel and the flag banner. The chat below talks to the configured model, so it also checks streaming end to end.</p>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="pm-stack">
+  {{ flag_slot() }}
+  <div class="pm-layout-trace">
+    {{ chat(placeholder="Ask the lab assistant something…") }}
+    {{ trace() }}
+  </div>
+
+  <section class="pm-card pm-stack">
+    <h2>Building blocks</h2>
+    <div class="pm-row">
+      <button class="pm-btn primary" type="button">Primary</button>
+      <button class="pm-btn" type="button">Secondary</button>
+      <button class="pm-btn ghost" type="button">Ghost</button>
+      <button class="pm-btn danger" type="button">Danger</button>
+      <button class="pm-btn" type="button" disabled>Disabled</button>
+    </div>
+    <div class="pm-row">
+      <span class="pm-pill ok">Solved</span>
+      <span class="pm-pill accent live">Running</span>
+      <span class="pm-pill warn">Model missing</span>
+      <span class="pm-pill bad">Unreachable</span>
+      <span class="pm-pill info">Info</span>
+      <span class="pm-pill plain">Stopped</span>
+    </div>
+    <div class="pm-note">A note for context the attendee should read before starting.</div>
+    <div class="pm-note warn">A warning, for example a model that isn't pulled yet.</div>
+    <pre class="pm-panel mono">from promptme import web
+web.attach(app, "llm01")              # shared CSS/JS and pm_base.html
+
+@app.post("/api/chat")
+def chat():
+    def events():
+        yield {"type": "trace", "title": "Prompt", "body": prompt}
+        for piece in llm.chat_stream(messages):
+            yield {"type": "token", "text": piece}
+        if leaked:
+            yield {"type": "flag", "flag": FLAG}
+    return web.sse(events())</pre>
+    <div class="pm-row">
+      <button class="pm-btn sm" type="button" onclick="document.getElementById('flag').hidden=false;document.getElementById('flag').replaceChildren(PM.h('strong',{text:'Flag captured'}),PM.h('code',{text:'flag{example}'}),PM.h('span',{class:'muted',text:'Submit it on the dashboard.'}))">Show flag banner</button>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  PM.chat({
+    root: "#chat", trace: "#trace", flag: "#flag",
+    endpoint: "/ui-kit/chat",
+    botName: "Lab assistant",
+    empty: "Streaming test: ask anything. Tokens appear as the model writes them.",
+    suggestions: ["What is prompt injection?", "Give me three tips for safe RAG."],
+  });
+</script>
+{% endblock %}

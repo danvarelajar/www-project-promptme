@@ -1,13 +1,18 @@
 """PromptMe dashboard: start/stop challenges, submit flags, configure the model endpoint."""
 
+import os
 import time
 
 from flask import Flask, abort, jsonify, redirect, render_template, request
 
-from promptme import config, launcher, llm, progress
+from promptme import config, launcher, llm, progress, web
 from promptme.runner import run
 
+# Challenges link back here; they learn the dashboard's port from this.
+os.environ.setdefault("PROMPTME_DASHBOARD_PORT", os.getenv("PORT", "5000"))
+
 app = Flask(__name__)
+web.attach(app)
 
 _health_cache = {"at": 0.0, "value": None}
 
@@ -137,6 +142,29 @@ def api_settings():
         )
         _health_cache["value"] = None
     return jsonify(_public_settings())
+
+
+@app.get("/ui-kit")
+def ui_kit():
+    """Reference page for challenge authors: the shared components, live."""
+    return render_template("ui_kit.html")
+
+
+@app.post("/ui-kit/chat")
+def ui_kit_chat():
+    message = ((request.get_json(silent=True) or {}).get("message") or "").strip()
+    messages = [
+        {"role": "system", "content": "You are a friendly assistant in a security training lab. Keep answers short."},
+        {"role": "user", "content": message},
+    ]
+
+    def events():
+        yield {"type": "trace", "title": "Prompt sent to the model", "body": "\n\n".join(f"[{m['role']}]\n{m['content']}" for m in messages)}
+        for piece in llm.chat_stream(messages, max_tokens=300):
+            yield {"type": "token", "text": piece}
+        yield {"type": "trace", "title": "Model finished", "body": f"model: {llm.model_for('chat')}"}
+
+    return web.sse(events())
 
 
 if __name__ == "__main__":
