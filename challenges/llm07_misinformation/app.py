@@ -16,7 +16,7 @@ import uuid
 
 from flask import Flask, jsonify, render_template, request, session
 
-from promptme import company, llm, web
+from promptme import company, web
 from promptme.runner import run
 
 app = Flask(__name__)

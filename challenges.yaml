@@ -131,7 +131,7 @@ challenges:
     track: core
     level: 1
     port: 5010
-    entry: challenges/llm10_improper_output_handling/app5.py
+    entry: challenges/llm10_improper_output_handling/app.py
     models: [chat]
-    flag_sha256: f774211f81aa4f086523c6ea8c4fcb24541b0ba587ef82114e6e4e58dd8a3668
-    summary: A shop assistant turns your requests into SQL and runs them. Start with 0 credits and buy something.
+    flag_sha256: f7e3fc5e513129f716a79f60c5c9dc83eaf9544e4917e8fc2be22015b036d52f
+    summary: Kestrelline's store assistant runs the SQL it writes. Start with 0 credit and buy something.

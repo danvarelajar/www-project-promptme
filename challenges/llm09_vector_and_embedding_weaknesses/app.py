@@ -31,7 +31,7 @@ URL_RE = re.compile(r"https?://[^\s)\]>\"']+")
 SEED = [
     ("Security incident reports", f"Security incident reports are kept by the IT Security team in the incident archive at {LEGIT_URL}. "
                                   "Access needs a security team account."),
-    ("VPN access", f"Connect to the VPN with the Kestrelline Connect app. Use your company account and approve the push notification."),
+    ("VPN access", "Connect to the VPN with the Kestrelline Connect app. Use your company account and approve the push notification."),
     ("Expense claims", "Submit expense claims in the finance portal within 30 days, with photos of every receipt."),
     ("Password reset", "Reset your password in the self-service portal. IT will never ask for your password."),
     ("Shipping labels", "Print shipping labels from the dispatch screen. Use the 100x150 mm label printers at each dock."),

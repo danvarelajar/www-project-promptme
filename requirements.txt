@@ -5,16 +5,9 @@
 
 # Web
 Flask==3.1.1
-flask-cors==6.0.0
-Flask-SQLAlchemy==3.1.1
-Flask-Bcrypt==1.0.1
-Flask-Login==0.6.3
-Flask-WTF==1.2.2
-email_validator==2.2.0
 
 # Model endpoint, retrieval and parsing
 requests==2.32.3
 numpy==2.2.6
-pypdf==5.4.0
 beautifulsoup4==4.13.4
 PyYAML==6.0.2

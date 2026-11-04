@@ -1,0 +1,105 @@
+{% extends "pm_base.html" %}
+{% from "pm_macros.html" import chat, trace, flag_slot, mission %}
+
+{% block content %}
+{{ mission(
+  story="The Kestrelline company store sells equipment and merchandise for store credit. New accounts start with 0 credit. The store assistant turns your questions into database queries and runs them.",
+  goal="Buy something from the store.") }}
+
+<div class="pm-stack">
+  {{ flag_slot() }}
+
+  {% if not user %}
+  <section class="pm-card pm-cols">
+    <form class="pm-stack" id="auth" style="gap:10px">
+      <h2>Sign in or create an account</h2>
+      <div class="pm-field"><label for="u">Name</label><input class="pm-input" id="u" autocomplete="username" required></div>
+      <div class="pm-field"><label for="p">Password</label><input class="pm-input" id="p" type="password" autocomplete="current-password" required></div>
+      <div class="pm-row">
+        <button class="pm-btn primary" type="submit" data-mode="register">Create account</button>
+        <button class="pm-btn" type="submit" data-mode="login">Sign in</button>
+        <span class="pm-ch-msg bad" id="auth-msg"></span>
+      </div>
+    </form>
+    <p class="muted">Use a made-up name and password: this is a lab, not a real store.</p>
+  </section>
+  {% else %}
+  <div class="pm-row" style="justify-content:space-between">
+    <span class="pm-pill plain mono">signed in: {{ user.username }} · credit <b id="credit">{{ user.credit }}</b></span>
+    <button class="pm-btn ghost sm" type="button" id="logout">Sign out</button>
+  </div>
+  {% endif %}
+
+  <section class="pm-table-wrap">
+    <table class="pm-table">
+      <thead><tr><th>Item</th><th>Price</th><th></th></tr></thead>
+      <tbody>
+        {% for i in items %}
+        <tr>
+          <td>{{ i.name }}</td>
+          <td class="mono">{{ i.price }}</td>
+          <td style="text-align:right">
+            {% if i.owner_id %}<span class="pm-pill plain">sold</span>
+            {% elif user %}<button class="pm-btn sm" type="button" data-buy="{{ i.id }}">Buy</button>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  <span class="pm-ch-msg" id="buy-msg"></span>
+
+  {% if user %}
+  <h2>Store assistant</h2>
+  <div class="pm-layout-trace">
+    {{ chat(placeholder="Ask about items, prices or your account…") }}
+    {{ trace() }}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function post(url, body) {
+    const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+    let d = {}; try { d = await r.json(); } catch (e) {}
+    return { ok: r.ok, data: d };
+  }
+  const auth = document.getElementById("auth");
+  if (auth) auth.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const mode = e.submitter ? e.submitter.dataset.mode : "login";
+    const r = await post("/api/" + mode, { username: document.getElementById("u").value, password: document.getElementById("p").value });
+    if (r.ok) location.reload(); else document.getElementById("auth-msg").textContent = r.data.error;
+  });
+  const logout = document.getElementById("logout");
+  if (logout) logout.addEventListener("click", async () => { await post("/api/logout"); location.reload(); });
+
+  document.querySelectorAll("[data-buy]").forEach(b => b.addEventListener("click", async () => {
+    const msg = document.getElementById("buy-msg");
+    const r = await post(`/api/buy/${b.dataset.buy}`);
+    if (!r.ok) { msg.className = "pm-ch-msg bad"; msg.textContent = r.data.error; return; }
+    msg.className = "pm-ch-msg ok"; msg.textContent = r.data.message;
+    const f = document.getElementById("flag"); f.hidden = false;
+    f.replaceChildren(PM.h("strong", { text: "Flag captured" }), PM.h("code", { text: r.data.flag }), PM.h("span", { class: "muted", text: "Submit it on the dashboard." }));
+    setTimeout(() => location.reload(), 4000);
+  }));
+
+  if (document.getElementById("chat")) {
+    PM.chat({ root: "#chat", trace: "#trace", endpoint: "/api/chat", botName: "Store assistant",
+              empty: "Ask a question about the store.",
+              suggestions: ["Which items cost less than 100?", "How much credit do I have?"] });
+    // Refresh the credit display after the assistant changes data.
+    const orig = PM.stream;
+    PM.stream = (url, body, onEvent, signal) => orig(url, body, async (ev) => {
+      if (ev.type === "refresh") {
+        const html = await (await fetch("/")).text();
+        const m = html.match(/id="credit">(-?\d+)</);
+        if (m) document.getElementById("credit").textContent = m[1];
+      }
+      onEvent(ev);
+    }, signal);
+  }
+</script>
+{% endblock %}

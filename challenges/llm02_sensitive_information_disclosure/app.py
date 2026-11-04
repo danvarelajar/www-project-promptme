@@ -15,7 +15,7 @@ import threading
 
 from flask import Flask, jsonify, render_template, request
 
-from promptme import company, llm, web
+from promptme import company, web
 from promptme.runner import run
 from promptme.vectors import VectorStore, split_text
 
