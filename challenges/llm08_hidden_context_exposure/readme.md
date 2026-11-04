@@ -1,21 +1,11 @@
-# LLM07: System Prompt Leakage
+# LLM08:2026 Hidden Context Exposure
 
-This challenge showcases a System Prompt Leakage vulnerability, where sensitive information—such as an API key—is embedded within the system prompt. Participants must use prompt injection techniques to extract the hidden data from the model's responses.
+Kestrelline's sales assistant gives quotes to prospects. Its hidden instructions contain internal rules and a partner discount code. An output filter stops the code from appearing in answers.
 
----
+**Goal:** find the partner discount code and redeem it on the page to get the flag.
 
-## Challenge Objective
+Application URL: `http://<your-server>:5008` (start it from the dashboard)
 
-Large Language Models (LLMs) are often guided by **system prompts** that influence their behavior. If these prompts include sensitive information (e.g., credentials, secrets, API keys), and if an attacker can manipulate or indirectly query the model's context, that information can leak.
+There is no Under the hood panel for this challenge: seeing the prompt would give the answer away.
 
-This CTF challenge simulates such a scenario:
-- The LLM is initialized with a system prompt that embeds a secret `API_KEY`.
-- The model is instructed never to reveal it.
-- Your mission: **get the model to leak the key through creative prompting**.
-
-Application URL: http://<your-server>:5008 (start it from the dashboard)
-
-**Hint:** Use Prompt Injection/Jailbreak techniques 
-
-
-
+Hints, solution and background are added in the content phase.

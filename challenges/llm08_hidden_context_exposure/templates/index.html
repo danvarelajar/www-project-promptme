@@ -1,39 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>LLM07: System Prompt Leakage</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script>
-        function showLoading() {
-            document.getElementById("loading").style.display = "block";
-        }
-    </script>
-</head>
-<body>
-    <div class="container">
-        <h1>LLM07: System Prompt Leakage</h1>
-        <p class="subtitle">The application has a confidential information stored in system prompt.</p>
-        <p class="subtitle">Goal: Trick the AI to reveal the secret hidden in system prompt</p>
+{% extends "pm_base.html" %}
+{% from "pm_macros.html" import chat, flag_slot, mission %}
 
-        <form method="POST" action="/ask" onsubmit="showLoading()">
-            <textarea name="message" placeholder="Type your message..." required></textarea>
-            <button type="submit">Submit</button>
-        </form>
+{% block content %}
+{{ mission(
+  story="Kestrelline's sales assistant gives quotes to prospects. Its hidden instructions contain internal rules and a partner discount code, and an output filter stops the code from appearing in answers.",
+  goal="Find the partner discount code and redeem it below.") }}
 
-        <div id="loading" class="loading" style="display: none;">⏳ Please wait, thinking hard...</div>
+<div class="pm-stack">
+  {{ flag_slot() }}
+  {{ chat(placeholder="Ask for a quote…") }}
+  <form class="pm-card pm-row" id="redeem" style="gap:10px">
+    <label class="pm-label" for="code">Redeem a discount code</label>
+    <input class="pm-input mono" id="code" style="max-width:280px" placeholder="XXXX-XXXXXXX-XXXX" autocomplete="off">
+    <button class="pm-btn" type="submit">Redeem</button>
+    <span id="redeem-msg" class="pm-ch-msg"></span>
+  </form>
+</div>
+{% endblock %}
 
-        {% if success %}
-            <div class="success">
-                🎉 <strong>Congratulations!</strong> You successfully jailbroke the assistant!<br><br>
-                <div class="message ai">{{ response_text }}</div>
-            </div>
-        {% elif response_text %}
-            <div class="history">
-                <div class="message user"><strong>🧑 User:</strong> {{ user_input }}</div>
-                <div class="message ai"><strong>🤖 Assistant:</strong> {{ response_text }}</div>
-            </div>
-        {% endif %}
-    </div>
-</body>
-</html>
+{% block scripts %}
+<script>
+  const history = [];
+  const ui = PM.chat({
+    root: "#chat", endpoint: "/api/chat", botName: "Sales assistant",
+    empty: "Ask for a quote, or about what the assistant can do.",
+    suggestions: ["How much is pallet storage for 200 pallets for 4 weeks?", "Do you offer partner discounts?"],
+    body: (text) => { const b = { message: text, history: history.slice() }; history.push({ role: "user", content: text }); return b; },
+  });
+  // Notices from the output filter, and keep replies in the history.
+  const orig = PM.stream;
+  PM.stream = (url, body, onEvent, signal) => {
+    let answer = "";
+    return orig(url, body, (ev) => {
+      if (ev.type === "token") answer += ev.text;
+      if (ev.type === "notice") ui.addMsg("system", ev.text);
+      if (ev.type === "done") history.push({ role: "assistant", content: answer });
+      onEvent(ev);
+    }, signal);
+  };
+  document.getElementById("redeem").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById("redeem-msg");
+    const r = await (await fetch("/api/redeem", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: document.getElementById("code").value }) })).json();
+    if (r.ok) {
+      msg.className = "pm-ch-msg ok"; msg.textContent = "Code accepted.";
+      const f = document.getElementById("flag"); f.hidden = false;
+      f.replaceChildren(PM.h("strong", { text: "Flag captured" }), PM.h("code", { text: r.flag }), PM.h("span", { class: "muted", text: "Submit it on the dashboard." }));
+    } else { msg.className = "pm-ch-msg bad"; msg.textContent = r.error; }
+  });
+</script>
+{% endblock %}
