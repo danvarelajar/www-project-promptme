@@ -119,10 +119,10 @@ challenges:
     track: core
     level: 1
     port: 5009
-    entry: challenges/llm09_vector_and_embedding_weaknesses/app8.py
+    entry: challenges/llm09_vector_and_embedding_weaknesses/app.py
     models: [chat, embed]
-    flag_sha256: 0ec3053bd80962f3f42ebc8ff631fc618998bd836dc3b4d09a0e6806d214b931
-    summary: Steer what a vector search retrieves until it hands you a restricted URL.
+    flag_sha256: 359abe5d74e96c66ceb39711402e7d2c24e150e1e70cb5faa33b82f82ee51a5e
+    summary: Anyone can add articles to Kestrelline's vector store. Win retrieval for a colleague's question and plant your link.
 
   - id: llm10
     code: "LLM10:2026"

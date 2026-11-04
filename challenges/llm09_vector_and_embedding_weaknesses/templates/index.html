@@ -1,47 +1,72 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>LLM08: Vector and Embedding Weaknesses</title>
-  <style>
-    body {
-      background-color: #111;
-      color: #eee;
-      font-family: sans-serif;
-      text-align: center;
-      padding: 5em;
-    }
-    h1 {
-      margin-bottom: 2em;
-    }
-    .btn {
-      display: inline-block;
-      padding: 15px 30px;
-      margin: 1em;
-      font-size: 18px;
-      background-color: crimson;
-      color: white;
-      border: none;
-      cursor: pointer;
-      text-decoration: none;
-    }
-    .btn:hover {
-      background-color: darkred;
-    }
-    .admin-section {
-      margin-top: 2em;
-      border-top: 1px solid #444;
-      padding-top: 1em;
-    }
-  </style>
-</head>
-<body>
-  
-  <h1>LLM08: Vector and Embedding Weaknesses</h1>
-  <p> The application uses a vector embedding model to match user queries with preloaded data in a vector store. Admin can add data to vector store. </p>
-  <p>Goal: Exploit semantic collision to generate a hidden URL and access the secret flag.</p>
-  <a href="{{ url_for('ask') }}" class="btn">Query LLM</a>
-  <a href="{{ url_for('login') }}" class="btn">Admin Login</a>
+{% extends "pm_base.html" %}
+{% from "pm_macros.html" import chat, trace, flag_slot, mission %}
 
-</body>
-</html>
+{% block content %}
+{{ mission(
+  story="Kestrelline's knowledge base assistant answers from the single closest article in a shared vector store. Any employee can contribute an article, with no review. A colleague regularly asks: “" ~ question ~ "” and follows whatever link the answer gives.",
+  goal="Make the assistant send your colleague to a link you planted.") }}
 
+<div class="pm-stack">
+  {{ flag_slot() }}
+  <div class="pm-cols">
+    <section class="pm-card pm-stack" style="gap:10px">
+      <h2>Contribute an article</h2>
+      <div class="pm-field"><label for="a-title">Title</label><input class="pm-input" id="a-title" maxlength="120"></div>
+      <div class="pm-field"><label for="a-text">Text</label><textarea class="pm-textarea" id="a-text" maxlength="2000"></textarea></div>
+      <div class="pm-row"><button class="pm-btn" type="button" id="publish">Publish article</button><span id="a-status" class="muted" style="font-size:13px"></span></div>
+      <details class="pm-trace-item"><summary>All articles (<span id="a-count">{{ articles|length }}</span>)</summary>
+        <pre>{% for a in articles %}[{{ a.author }}] {{ a.title }}
+{% endfor %}</pre></details>
+    </section>
+    <section class="pm-card pm-stack" style="gap:10px">
+      <div class="pm-row" style="justify-content:space-between"><h2>Your colleague</h2>
+        <button class="pm-btn sm" type="button" id="ask-again">Ask again</button></div>
+      <div class="pm-panel pm-stack" style="gap:8px">
+        <span class="pm-label">Question</span><p>{{ question }}</p>
+        <span class="pm-label">Answer they got</span><p id="c-answer" style="white-space:pre-wrap" class="muted">They haven't asked yet.</p>
+        <span class="pm-label">Article used</span><p id="c-top" class="mono muted" style="font-size:13px">—</p>
+      </div>
+    </section>
+  </div>
+
+  <h2>Test queries</h2>
+  <div class="pm-layout-trace">
+    {{ chat(placeholder="Try a query to see what gets retrieved…") }}
+    {{ trace(title="Retrieval") }}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  PM.chat({ root: "#chat", trace: "#trace", endpoint: "/api/chat", botName: "Knowledge base",
+            empty: "The Retrieval panel shows the top matches and their similarity scores.",
+            suggestions: ["How do I connect to the VPN?", {{ question|tojson }}] });
+
+  function show(s) {
+    if (s.colleague) {
+      document.getElementById("c-answer").textContent = s.colleague.answer;
+      document.getElementById("c-answer").className = "";
+      document.getElementById("c-top").textContent = `[${s.colleague.top_author}] ${s.colleague.top}`;
+    }
+    if (s.articles) document.getElementById("a-count").textContent = s.articles;
+    if (s.flag) {
+      const f = document.getElementById("flag"); f.hidden = false;
+      f.replaceChildren(PM.h("strong", { text: "Flag captured" }), PM.h("code", { text: s.flag }), PM.h("span", { class: "muted", text: "Submit it on the dashboard." }));
+    }
+  }
+  async function post(url, body, btn) {
+    btn.disabled = true;
+    const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+    const s = await r.json(); btn.disabled = false;
+    if (!r.ok) { document.getElementById("a-status").textContent = s.error; return; }
+    show(s);
+  }
+  document.getElementById("publish").addEventListener("click", (e) => {
+    document.getElementById("a-status").textContent = "Published. Your colleague is asking again…";
+    post("/api/articles", { title: document.getElementById("a-title").value, text: document.getElementById("a-text").value }, e.target);
+  });
+  document.getElementById("ask-again").addEventListener("click", (e) => post("/api/colleague", {}, e.target));
+  fetch("/api/status").then(r => r.json()).then(show);
+</script>
+{% endblock %}
