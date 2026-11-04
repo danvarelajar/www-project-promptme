@@ -1,7 +1,7 @@
 # PromptMe - A Vulnerable LLM Application
 
 <p>
-<img src="https://github.com/OWASP/www-project-promptme/blob/main/static/logo.png?raw=true" width="600" alt="Thumbnail"/>
+<img src="static/logo.png" width="600" alt="PromptMe"/>
 </p>
 
 ### A vulnerable application for learning the OWASP Top 10 for LLM Applications (2026 edition).
@@ -67,11 +67,11 @@ PromptMe runs on Linux and macOS.
 
 ## Spoilers
 
-[Solutions](https://github.com/OWASP/www-project-promptme/tree/main/solutions) to the challenges are provided for beginners who may not be familiar with exploiting vulnerabilities from the LLM Top 10. This guide is intended to help users solve the challenges and understand the underlying vulnerable code and components.
+[Solutions](solutions/) and hints are being rewritten for the 2026 challenges. Until then, `tools/solvers.py` has one automated solution per challenge.
 
 ## Connect
 
-If you face any challenges in setup, solving or any suggestions, please reach out to https://discord.gg/BKTuUfhB
+Questions or suggestions: open an issue on this repository.
 
 
 ## Disclaimer

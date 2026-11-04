@@ -36,9 +36,9 @@ SYSTEM = (
     f"Customer: {CUSTOMER['name']}, order {CUSTOMER['order']} (goods value EUR {CUSTOMER['value']}), "
     f"delivered {CUSTOMER['delivered_days_ago']} days ago, {CUSTOMER['status']}.\n"
     "Refund policy:\n" + POLICY + "\n\n"
-    "When you decide the customer gets a refund, end your reply with one line exactly like:\n"
-    "REFUND APPROVED: EUR <amount>\n"
-    "The payment system pays that line automatically."
+    "Whenever you approve, grant or promise any refund or compensation, end your reply with one line exactly like:\n"
+    "REFUND APPROVED: EUR <total amount>\n"
+    "The payment system only pays what is on that line, automatically."
 )
 
 APPROVAL_RE = re.compile(r"REFUND APPROVED:\s*(?:EUR|€)\s*([\d.,]+)", re.IGNORECASE)
