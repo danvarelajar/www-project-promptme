@@ -7,7 +7,7 @@ The application allows users to ask questions based on the OWASP LLM Top 10 docu
 ## Challenge Objective
 Participants must identify how the model's behavior has been poisoned by tampered data and potentially exploit it to modify LLM Top 10 entries such that it replaces LLM01. 
 
-Application URL: http://127.0.0.1:5004
+Application URL: http://<your-server>:5005 (start it from the dashboard)
 
 **Hint:** Identify the source
 

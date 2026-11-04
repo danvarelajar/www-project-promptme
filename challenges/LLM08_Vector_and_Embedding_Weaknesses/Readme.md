@@ -8,7 +8,7 @@ In this challenge, participants will exploit a semantic collision vulnerability 
 
 Identify the location of flag, and accordingly create a embedding payload to submit to vector store. Draft prompt to identify the URL containing flag.
 
-Application URL: http://127.0.0.1:5008
+Application URL: http://<your-server>:5009 (start it from the dashboard)
 
 **Hint:** Understand the application response and accordingly craft a prompt to submit to vector store, which performes similarility match and give flag URL.
 

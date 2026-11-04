@@ -13,7 +13,7 @@ This CTF challenge simulates such a scenario:
 - The model is instructed never to reveal it.
 - Your mission: **get the model to leak the key through creative prompting**.
 
-Application URL: http://127.0.0.1:5007
+Application URL: http://<your-server>:5008 (start it from the dashboard)
 
 **Hint:** Use Prompt Injection/Jailbreak techniques 
 

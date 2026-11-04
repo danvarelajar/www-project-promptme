@@ -7,7 +7,7 @@ This application allows user to login and interact with the application chatbot.
 ## Challenge Objective
 Use Prompt Injection/Jailbreak techniques to get admin's secret key. 
 
-Application URL: http://127.0.0.1:5001
+Application URL: http://<your-server>:5001 (start it from the dashboard)
 
 **Hint:** External URL feature can help
 

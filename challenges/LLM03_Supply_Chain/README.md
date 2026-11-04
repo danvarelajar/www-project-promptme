@@ -6,7 +6,7 @@ This challenge simulates attacks on large language model (LLM) supply chains, in
 ## Challenge Objective
 This challenge demonstrates supply chain risk in LLM applications, where a rogue model—used without verification—silently exfiltrates user chat data to an attacker's server. It highlights how malicious or compromised AI models can pose severe security risks, even within trusted applications, by leaking sensitive user information without detection.
 
-Application URL: http://127.0.0.1:5003
+Application URL: http://<your-server>:5004 (start it from the dashboard)
 
 **Hint:** Outbound traffic inspection can give the lead.
 

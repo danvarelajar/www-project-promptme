@@ -9,7 +9,7 @@ Participants interact with a chatbot that is integrated with a SQLite3 database.
 
 Once register, you login with 0 credits. Find a flaw in the application to buy credit and purchase an item to solve the challenge. 
 
-Application URL: http://127.0.0.1:5005
+Application URL: http://<your-server>:5010 (start it from the dashboard)
 
 **Hint:** Use prompts that can translate to SQL statements and update balance. 
 

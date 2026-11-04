@@ -8,7 +8,7 @@ In this challenge, you have access to a file management system designed for auth
 
 Use creative prompts that can list sensitive files stored in restricted folder. 
 
-Application URL: http://127.0.0.1:5006
+Application URL: http://<your-server>:5003 (start it from the dashboard)
 
 **Hint:** Only authorised users can access restricted folders
 

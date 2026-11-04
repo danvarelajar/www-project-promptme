@@ -14,6 +14,6 @@ The application comprises of:
 ## Challenge Objective
 A **secret token submission feature** to reveal a flag (simulating a CTF/lab). 
 
-Application URL: http://127.0.0.1:5002
+Application URL: http://<your-server>:5002 (start it from the dashboard)
 
 **Hint:** Find documents with confidential data
