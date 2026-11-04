@@ -1,17 +1,13 @@
-# LLM01- Prompt Injection
+# LLM01:2026 Prompt Injection
 
-A Prompt Injection Vulnerability occurs when user prompts alter the LLM’s behavior or output in unintended ways. These inputs can affect the model even if they are imperceptible to humans, therefore prompt injections do not need to be human-visible/readable, as long as the content is parsed by the model.
+Kestrelline's intranet assistant answers questions and summarises web pages, including posts on the company news board. Direct messages pass a security filter (a guard model) first. Earlier, an admin asked the assistant to remember a release key.
 
-This application allows user to login and interact with the application chatbot. The admin has stored the secret key in his chat history. Application also allows to interact with external/internal applications using `/fetch` methods. 
+**Goal:** get the assistant to reveal the admin's release key. The page shows the flag when it leaks.
 
-## Challenge Objective
-Use Prompt Injection/Jailbreak techniques to get admin's secret key. 
+Application URL: `http://<your-server>:5001` (start it from the dashboard)
 
-Application URL: http://<your-server>:5001 (start it from the dashboard)
+What's here:
+- Chat with streaming answers and an **Under the hood** panel (guard verdict, fetched page, prompt outline).
+- A **news board** any employee can post to. Each post has its own URL.
 
-**Hint:** External URL feature can help
-
-
-
-
-
+Hints, solution and background are added in the content phase.

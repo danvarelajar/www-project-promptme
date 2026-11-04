@@ -23,10 +23,10 @@ challenges:
     track: core
     level: 1
     port: 5001
-    entry: challenges/llm01_prompt_injection/app1.py
+    entry: challenges/llm01_prompt_injection/app.py
     models: [chat]
-    flag_sha256: c7b3136d87262f660c1a7758a7bf89187b1a7404f5cd144944839acdf3cd6e87
-    summary: Get the admin's secret out of a chatbot that summarises web pages for you.
+    flag_sha256: fab375040f927ccdb0937e84d3927ea4eb61eb2cf516a5bf1c7e8deaea7e37d7
+    summary: Kestrelline's intranet assistant summarises news posts. Get it to reveal the admin's release key.
 
   - id: llm02
     code: "LLM02:2026"

@@ -31,7 +31,6 @@
         <div class="pm-challenge-head">
           <span class="pm-code">{{ pm_challenge.code }}{% if pm_challenge.was %} <span class="muted">· was {{ pm_challenge.was }}</span>{% endif %}</span>
           <h1>{{ pm_challenge.title }}</h1>
-          {% if pm_challenge.summary %}<p>{{ pm_challenge.summary }}</p>{% endif %}
         </div>
         {% endif %}
       {% endblock %}
