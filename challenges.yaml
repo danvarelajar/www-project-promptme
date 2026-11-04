@@ -47,10 +47,10 @@ challenges:
     track: core
     level: 1
     port: 5003
-    entry: challenges/llm03_excessive_agency/app6.py
+    entry: challenges/llm03_excessive_agency/app.py
     models: [chat]
-    flag_sha256: bb1ebdf9dfab9ff18d5ba061e366338b45da0513ce70bd9ff9425fbc89ba76f7
-    summary: A file assistant decides for itself who you are and what you may open.
+    flag_sha256: 87757ecef92c3a3452b999c78a437fef6da00e77c63f701badaa9f95e4aa887b
+    summary: Kestrelline's file agent can read the whole drive. Only its instructions keep you out of /restricted.
 
   - id: llm04
     code: "LLM04:2026"

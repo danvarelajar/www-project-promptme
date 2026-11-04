@@ -1,2 +1,0 @@
-This is a demo file for the LLM06 Excessive Agency challenge.
-Regular users can read files in the accessible folder.
