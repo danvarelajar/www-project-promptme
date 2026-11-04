@@ -95,10 +95,10 @@ challenges:
     track: core
     level: 1
     port: 5007
-    entry: challenges/llm07_misinformation/app9.py
+    entry: challenges/llm07_misinformation/app.py
     models: [chat]
-    flag_sha256: null   # no flag yet — added in Phase 2
-    summary: Watch a confident assistant get facts wrong.
+    flag_sha256: db1d8690f6d26e66b1e9515bd33c5046b9778cce44fedc94f215964a6b122e5e
+    summary: Kestrelline's support bot approves refunds and an automation pays them. Get paid more than the policy allows.
 
   - id: llm08
     code: "LLM08:2026"
