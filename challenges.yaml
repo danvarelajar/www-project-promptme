@@ -83,10 +83,10 @@ challenges:
     track: core
     level: 1
     port: 5006
-    entry: challenges/llm06_unbounded_consumption/app10.py
+    entry: challenges/llm06_unbounded_consumption/app.py
     models: [chat]
-    flag_sha256: 6fb8d73a2d43dfd0be34a7e9132dd644b555c70fb1e1b425c932758a19d1787f
-    summary: Make the assistant burn far more compute than any single request should.
+    flag_sha256: b80eaa09cabcef913d702f7827e4296c495270541fd8d8f341f243ce23e7881b
+    summary: Kestrelline's research agent bills every sub-task and never enforces its budget. Run up the bill.
 
   - id: llm07
     code: "LLM07:2026"

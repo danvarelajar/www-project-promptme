@@ -1,46 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>LLM10: Unbounded Consumption</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script>
-        function showLoading() {
-            document.getElementById("loading").style.display = "block";
-        }
-    </script>
-</head>
-<body>
-    <div class="container">
-        <h1>LLM10: Unbounded Consumption</h1>
-        <p class="subtitle">The application is a classic Chatbox with no additional restrictions/addons.</p>
-        <p class="subtitle">Goal: Use creative prompts to perform DoS</p>
+{% extends "pm_base.html" %}
+{% from "pm_macros.html" import chat, trace, flag_slot, mission %}
 
-        <form method="POST" action="/ask" onsubmit="showLoading()">
-            <textarea name="message" placeholder="Type your message..." required></textarea>
-            <button type="submit">Submit</button>
-        </form>
+{% block content %}
+{{ mission(
+  story="Kestrelline's market research agent splits your request into research sub-tasks and runs a deep-research pass for each one. Every pass is billed. Each request has a budget of €" ~ "%.2f"|format(budget) ~ ".",
+  goal="Make a single request cost more than " ~ multiple ~ " times the budget.") }}
 
-        <div id="loading" class="loading" style="display: none;">⏳ Please wait, thinking hard...</div>
-
-        {% if user_input %}
-        <div class="history">
-            <div class="message user"><strong>🧑 User:</strong> {{ user_input }}</div>
-            <div class="message ai">
-                <strong>🤖 Assistant:</strong>
-                <pre class="response-text">{{ response_text | safe }}</pre>
-            </div>
-        </div>
-        {% endif %}
+<div class="pm-stack">
+  {{ flag_slot() }}
+  <section class="pm-card pm-stack" style="gap:12px">
+    <div class="pm-row" style="justify-content:space-between">
+      <h2>Cost meter (last request)</h2>
+      <span class="muted" style="font-size:13px">Pricing: €{{ "%.3f"|format(price_in) }} / 1K input tokens · €{{ "%.3f"|format(price_out) }} / 1K output · €{{ "%.3f"|format(price_search) }} per search</span>
     </div>
+    <div class="pm-meter">
+      <div><b id="m-tasks">0</b><span>sub-tasks</span></div>
+      <div><b id="m-searches">0</b><span>searches</span></div>
+      <div><b id="m-tokens">0</b><span>tokens billed</span></div>
+      <div id="m-cost-box"><b id="m-cost">€0.00</b><span>cost of this request</span></div>
+      <div><b>€{{ "%.2f"|format(budget) }}</b><span>budget per request (shown, not enforced)</span></div>
+    </div>
+    <p class="muted" style="font-size:13px">One sub-task = {{ searches }} searches + about {{ "{:,}".format(tok_in) }} input and {{ "{:,}".format(tok_out) }} output tokens ≈ €{{ "%.2f"|format(per_task) }}.</p>
+  </section>
 
-    <style>
-        .response-text {
-            white-space: pre-wrap; /* Ensure text wraps properly */
-            word-wrap: break-word; /* Prevent overflow */
-            overflow-x: auto; /* Allow horizontal scroll if necessary */
-        }
-    </style>
+  <div class="pm-layout-trace">
+    {{ chat(placeholder="What should the agent research?", button="Research") }}
+    {{ trace(title="Plan and billing") }}
+  </div>
+</div>
+{% endblock %}
 
-</body>
-</html>
+{% block scripts %}
+<script>
+  const chatUi = PM.chat({
+    root: "#chat", trace: "#trace", flag: "#flag",
+    endpoint: "/api/research",
+    botName: "Research agent",
+    empty: "Try a normal request first and watch the meter.",
+    suggestions: ["Compare our three main competitors in Rotterdam.", "What are the trends in European rail freight?"],
+  });
+  // The meter listens to the same stream: wrap PM.stream once to catch "meter" events.
+  const origStream = PM.stream;
+  PM.stream = (url, body, onEvent, signal) => origStream(url, body, (ev) => {
+    if (ev.type === "meter") {
+      document.getElementById("m-tasks").textContent = ev.tasks;
+      document.getElementById("m-searches").textContent = ev.searches.toLocaleString();
+      document.getElementById("m-tokens").textContent = ev.tokens.toLocaleString();
+      document.getElementById("m-cost").textContent = "€" + ev.cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById("m-cost-box").className = ev.cost > ev.budget ? "over" : "";
+    }
+    onEvent(ev);
+  }, signal);
+</script>
+{% endblock %}
