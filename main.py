@@ -1,228 +1,143 @@
-from flask import Flask, render_template, redirect, request, jsonify
-import subprocess, sys, os, requests, psutil, time, socket, json
+"""PromptMe dashboard: start/stop challenges, submit flags, configure the model endpoint."""
+
+import time
+
+from flask import Flask, abort, jsonify, redirect, render_template, request
+
+from promptme import config, launcher, llm, progress
+from promptme.runner import run
 
 app = Flask(__name__)
 
-running_apps = {}
+_health_cache = {"at": 0.0, "value": None}
 
-CONFIG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
-OLLAMA_CONFIG_PATH = os.path.join(CONFIG_DIR, "ollama_config.json")
-DEFAULT_OLLAMA_HOST = "http://localhost:11434"
 
-def load_config():
-    """Load config from file. Returns dict with ollama_host, api_key, debug_mode."""
+def _challenge_or_404(cid):
+    ch = config.challenge(cid)
+    if not ch:
+        abort(404, description=f"Unknown challenge '{cid}'.")
+    return ch
+
+
+def _public_settings():
+    s = config.settings()
+    return {
+        "ollama_host": s["ollama_host"],
+        "api_key_set": bool(s["api_key"]),
+        "debug_mode": s["debug_mode"],
+        "models": s["models"],
+    }
+
+
+def _health(force=False):
+    """Is the endpoint reachable, and are the configured models on it?"""
+    now = time.time()
+    if not force and _health_cache["value"] and now - _health_cache["at"] < 10:
+        return _health_cache["value"]
+    s = config.settings()
+    result = {"endpoint": llm.base_url(), "reachable": False, "error": None, "models": [], "missing": []}
     try:
-        if os.path.exists(OLLAMA_CONFIG_PATH):
-            with open(OLLAMA_CONFIG_PATH, "r") as f:
-                data = json.load(f)
-                return {
-                    "ollama_host": (data.get("ollama_host") or DEFAULT_OLLAMA_HOST).strip() or DEFAULT_OLLAMA_HOST,
-                    "api_key": (data.get("api_key") or "").strip(),
-                    "debug_mode": bool(data.get("debug_mode", False)),
-                }
-    except (json.JSONDecodeError, IOError):
-        pass
-    return {"ollama_host": DEFAULT_OLLAMA_HOST, "api_key": "", "debug_mode": False}
-
-def load_ollama_config():
-    """Load Ollama host from config file."""
-    return load_config()["ollama_host"]
-
-def save_ollama_config(ollama_host, debug_mode=None, api_key=None):
-    """Save Ollama host (and optionally debug_mode / api_key) to config file."""
-    os.makedirs(CONFIG_DIR, exist_ok=True)
-    cfg = load_config()
-    cfg["ollama_host"] = ollama_host
-    if debug_mode is not None:
-        cfg["debug_mode"] = bool(debug_mode)
-    if api_key is not None:
-        cfg["api_key"] = str(api_key).strip()
-    with open(OLLAMA_CONFIG_PATH, "w") as f:
-        json.dump(cfg, f, indent=2)
-
-def normalize_ollama_host(host):
-    """Normalize host input to full URL (e.g. host:port -> http://host:port)."""
-    if not host or not host.strip():
-        return DEFAULT_OLLAMA_HOST
-    host = host.strip()
-    if "://" not in host:
-        host = "http://" + host
-    if ":" not in host.split("//")[-1]:
-        host = host.rstrip("/") + ":11434"
-    return host
-
-def get_challenge_env():
-    """Build environment for challenge subprocess with OLLAMA_HOST, OLLAMA_API_KEY, PROMPTME_DEBUG."""
-    env = os.environ.copy()
-    cfg = load_config()
-    env["OLLAMA_HOST"] = cfg["ollama_host"]
-    api_key = (cfg.get("api_key") or "").strip()
-    if api_key:
-        env["OLLAMA_API_KEY"] = api_key
-    else:
-        env.pop("OLLAMA_API_KEY", None)
-    if cfg.get("debug_mode"):
-        env["PROMPTME_DEBUG"] = "1"
-    else:
-        env.pop("PROMPTME_DEBUG", None)
-    return env
-
-def is_port_in_use(port):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        return sock.connect_ex(('localhost', port)) == 0
-
-def start_challenge(port, app_path):
-    global running_apps
-
-    if is_port_in_use(port):
-        raise RuntimeError(f"Port {port} is already in use. Challenge cannot be started.")
-
-    # Create a log file for this challenge
-    project_root = os.path.dirname(os.path.abspath(__file__))
-    log_dir = os.path.join(project_root, "logs")
-    os.makedirs(log_dir, exist_ok=True)
-    log_file = os.path.join(log_dir, f"challenge_{port}.log")
-
-    env = get_challenge_env()
-
-    # Start the challenge and log stdout/stderr
-    with open(log_file, "w") as log:
-        process = subprocess.Popen(
-            [sys.executable, app_path],
-            stdout=log,
-            stderr=log,
-            close_fds=True,
-            env=env,
-            cwd=project_root
-        )
-
-    running_apps[port] = process
+        available = llm.list_models()
+        result["reachable"] = True
+        result["models"] = available
+        result["missing"] = sorted({
+            name for role, name in s["models"].items() if name and not llm.has_model(name, available)
+        })
+    except llm.LLMError as e:
+        result["error"] = str(e)
+    _health_cache.update(at=now, value=result)
+    return result
 
 
-@app.route('/')
+def _challenge_view(ch, solved, health):
+    st = launcher.status(ch)
+    s = config.settings()
+    needs = [s["models"][r] for r in ch.get("models", []) if s["models"].get(r)]
+    missing = [m for m in needs if m in health["missing"]]
+    return {
+        "id": ch["id"], "code": ch["code"], "was": ch.get("was"), "title": ch["title"],
+        "summary": ch.get("summary", ""), "track": ch.get("track", "core"), "level": ch.get("level", 1),
+        "port": ch["port"], "has_flag": bool(ch.get("flag_sha256")),
+        "running": st["running"], "solved_at": solved.get(ch["id"]),
+        "models": needs, "missing_models": missing,
+    }
+
+
+@app.route("/")
 def dashboard():
-    cfg = load_config()
-    ollama_host = cfg["ollama_host"]
-    api_key = cfg.get("api_key", "")
-    debug_mode = cfg.get("debug_mode", False)
-    risks = [
-        { 'id': 1, 'title': 'Prompt Injection', 'icon': 'fas fa-code' },
-        { 'id': 2, 'title': 'Sensitive Info Disclosure', 'icon': 'fas fa-shield-alt' },
-        { 'id': 3, 'title': 'Supply Chain', 'icon': 'fas fa-shipping-fast' },
-        { 'id': 4, 'title': 'Data & Model Poisoning', 'icon': 'fas fa-skull' },
-        { 'id': 5, 'title': 'Improper Output Handling', 'icon': 'fas fa-exclamation-triangle' },
-        { 'id': 6, 'title': 'Excessive Agency', 'icon': 'fas fa-user-secret' },
-        { 'id': 7, 'title': 'System Prompt Leakage', 'icon': 'fas fa-file-alt' },
-        { 'id': 8, 'title': 'Vector & Embedding Weaknesses','icon': 'fas fa-project-diagram' },
-        { 'id': 9, 'title': 'Misinformation', 'icon': 'fas fa-bullhorn' },
-        { 'id': 10,'title': 'Unbounded Consumption', 'icon': 'fas fa-infinity' }
-    ]
-    return render_template(
-        'dashboard.html',
-        risks=risks,
-        ollama_host=ollama_host,
-        api_key=api_key,
-        debug_mode=debug_mode,
-    )
+    return render_template("dashboard.html")
 
-@app.route('/settings', methods=['GET', 'POST'])
-def settings():
-    if request.method == 'POST':
-        data = request.get_json(silent=True) or request.form
-        ollama_host_raw = (data.get("ollama_host") or "").strip()
-        ollama_host = normalize_ollama_host(ollama_host_raw) if ollama_host_raw else DEFAULT_OLLAMA_HOST
-        api_key = data.get("api_key")
-        if api_key is not None:
-            api_key = str(api_key).strip()
-        debug_mode = data.get("debug_mode")
-        if debug_mode is not None:
-            debug_mode = str(debug_mode).lower() in ("1", "true", "yes")
-        save_ollama_config(ollama_host, debug_mode=debug_mode, api_key=api_key)
-        if request.is_json or request.content_type == "application/json":
-            cfg = load_config()
-            return jsonify({
-                "status": "saved",
-                "ollama_host": cfg["ollama_host"],
-                "api_key": cfg.get("api_key", ""),
-                "debug_mode": cfg.get("debug_mode", False),
-            })
-        return redirect("/")
-    return jsonify(load_config())
 
-def wait_until_responsive(url, timeout=30):
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        try:
-            response = requests.get(url, timeout=2)
-            if response.status_code == 200:
-                return True
-        except requests.exceptions.RequestException:
-            pass
-        time.sleep(1)
-    return False
+@app.get("/api/state")
+def api_state():
+    health = _health(force=request.args.get("refresh") == "1")
+    solved = progress.solved()
+    return jsonify({
+        "settings": _public_settings(),
+        "health": health,
+        "challenges": [_challenge_view(c, solved, health) for c in config.challenges()],
+    })
 
-@app.route('/start/<int:challenge_id>')
-def start_challenge_route(challenge_id):
-    client_host = request.host.split(":")[0]
-    if challenge_id == 1:
-        port = 5001
-        app_path = "challenges/LLM01_Prompt_Injection/app1.py"
-    elif challenge_id == 2:
-        port = 5002
-        app_path = "challenges/LLM02_Sensitive_Information_Disclosure/app2.py"
-    elif challenge_id == 3:
-        port = 5003
-        app_path = "challenges/LLM03_Supply_Chain/app3.py"
-    elif challenge_id == 4:
-        port = 5004
-        app_path = "challenges/LLM04_Data_and_Model_Poisoning/app4.py"
-    elif challenge_id == 5:
-        port = 5005
-        app_path = "challenges/LLM05_Improper_Output_Handling/app5.py"
-    elif challenge_id == 6:
-        port = 5006
-        app_path = "challenges/LLM06_Excessive_Agency/app6.py"
-    elif challenge_id == 7:
-        port = 5007
-        app_path = "challenges/LLM07_System_Prompt_Leakage/app7.py"
-    elif challenge_id == 8:
-        port = 5008
-        app_path = "challenges/LLM08_Vector_and_Embedding_Weaknesses/app8.py"
-    elif challenge_id == 9:
-        port = 5009
-        app_path = "challenges/LLM09_Misinformation/app9.py"
-    elif challenge_id == 10:
-        port = 5010
-        app_path = "challenges/LLM10_Unbounded_Consumption/app10.py"
-    else:
-        return "Unknown Challenge ID", 404
 
+@app.post("/api/challenges/<cid>/start")
+def api_start(cid):
+    ch = _challenge_or_404(cid)
     try:
-        start_challenge(port, app_path)
-    except RuntimeError as e:
-        return f"<h3>Error: {str(e)}</h3><p>Please stop the existing service manually or choose a different port.</p>", 409
+        launcher.start(ch)
+    except launcher.LaunchError as e:
+        return jsonify({"ok": False, "error": str(e)}), 409
+    return jsonify({"ok": True, "url": f"{request.scheme}://{request.host.split(':')[0]}:{ch['port']}/"})
 
-    target_url = f"http://{client_host}:{port}/"
-    if wait_until_responsive(target_url):
-        return redirect(f"http://{client_host}:{port}/")
-    else:
-        return f"Challenge {challenge_id} failed to start in time. Check logs.", 500
 
-@app.route('/stop/<int:challenge_id>')
-def stop_challenge_route(challenge_id):
-    global running_apps
-    port = 5000 + challenge_id
-    if port in running_apps:
-        try:
-            process = running_apps[port]
-            process.terminate()
-            process.wait(timeout=5)
-        except (psutil.NoSuchProcess, psutil.TimeoutExpired, ProcessLookupError):
-            process.kill()
-        del running_apps[port]
-        return f"Challenge {challenge_id} stopped."
+@app.post("/api/challenges/<cid>/stop")
+def api_stop(cid):
+    ch = _challenge_or_404(cid)
+    launcher.stop(ch)
+    return jsonify({"ok": True})
 
-    return f"No running instance for Challenge {challenge_id}."
+
+@app.post("/api/challenges/<cid>/flag")
+def api_flag(cid):
+    ch = _challenge_or_404(cid)
+    if not ch.get("flag_sha256"):
+        return jsonify({"ok": False, "error": "This challenge has no flag yet."}), 400
+    submitted = (request.get_json(silent=True) or {}).get("flag", "")
+    if not progress.check_flag(ch, submitted):
+        return jsonify({"ok": False, "error": "That's not the flag for this challenge."}), 200
+    solved = progress.mark_solved(cid)
+    return jsonify({"ok": True, "solved_at": solved[cid]})
+
+
+@app.get("/start/<cid>")
+def start_and_open(cid):
+    """Plain link form of start, kept for bookmarks and the solutions guides."""
+    ch = _challenge_or_404(cid)
+    try:
+        launcher.start(ch)
+    except launcher.LaunchError as e:
+        return render_template("dashboard.html", launch_error=str(e)), 409
+    return redirect(f"{request.scheme}://{request.host.split(':')[0]}:{ch['port']}/")
+
+
+@app.route("/api/settings", methods=["GET", "POST"])
+def api_settings():
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        api_key = data.get("api_key")
+        if data.get("clear_api_key"):
+            api_key = ""
+        elif not api_key:
+            api_key = None  # blank field keeps the saved key
+        models = data.get("models") if isinstance(data.get("models"), dict) else None
+        config.save_settings(
+            ollama_host=data.get("ollama_host"),
+            api_key=api_key,
+            debug_mode=data.get("debug_mode"),
+            models=models,
+        )
+        _health_cache["value"] = None
+    return jsonify(_public_settings())
+
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    run(app, 5000)

@@ -1,19 +1,8 @@
 from flask import Flask, render_template, request
-import os
-import sys
 import time
 
-# Add project root for ollama_client
-_d = os.path.dirname(os.path.abspath(__file__))
-for _ in range(10):
-    if os.path.isfile(os.path.join(_d, "main.py")):
-        sys.path.insert(0, _d)
-        break
-    _d = os.path.dirname(_d)
-    if not _d:
-        break
-
-from ollama_client import chat as ollama_chat
+from promptme import llm
+from promptme.runner import run
 
 app = Flask(__name__)
 
@@ -31,7 +20,8 @@ def generate_response(user_input):
     ]
     start = time.time()
     try:
-        response = ollama_chat(messages, model="mistral", timeout=900)
+        # No max_tokens cap here: unbounded generation is the point of this challenge.
+        response = llm.chat(messages, max_tokens=None, timeout=900)
     except Exception as e:
         response = f"[!] Error while generating response: {str(e)}"
     end = time.time()
@@ -65,4 +55,4 @@ def ask():
     return render_template("index.html", response_text=response + flag_message, user_input=user_input)
 
 if __name__ == "__main__":
-    app.run("0.0.0.0", debug=True, port=5010)
+    run(app, 5006)

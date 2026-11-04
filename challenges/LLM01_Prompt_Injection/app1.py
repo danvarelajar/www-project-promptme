@@ -3,19 +3,9 @@ import requests
 from bs4 import BeautifulSoup
 import uuid
 import os
-import sys
 
-# Add project root for ollama_client
-_d = os.path.dirname(os.path.abspath(__file__))
-for _ in range(10):
-    if os.path.isfile(os.path.join(_d, "main.py")):
-        sys.path.insert(0, _d)
-        break
-    _d = os.path.dirname(_d)
-    if not _d:
-        break
-
-from ollama_client import chat as ollama_chat
+from promptme import llm
+from promptme.runner import run
 from markupsafe import Markup
 
 app = Flask(__name__)
@@ -43,9 +33,9 @@ def store_message(user_id, role, content):
 
 # Main chat model call (uses /v1/chat/completions)
 def call_ollama(prompt):
-    return ollama_chat([{"role": "user", "content": prompt}], model="mistral")
+    return llm.chat([{"role": "user", "content": prompt}])
 
-# Guardian model to detect malicious input
+# Guard: the same chat model, asked to classify the input. Deliberately weak.
 def check_malicious_input(user_input):
     print("\n[DEBUG] Checking user input for malicious content...")
     print("[DEBUG] User Input:", user_input)
@@ -57,9 +47,9 @@ def check_malicious_input(user_input):
     )
 
     try:
-        verdict_raw = ollama_chat(
+        verdict_raw = llm.chat(
             [{"role": "user", "content": guardian_prompt}],
-            model="granite3-guardian"
+            max_tokens=10, temperature=0,
         ).strip()
         verdict = verdict_raw.upper()
         print("[DEBUG] Guardian Model Raw Response:", verdict_raw)
@@ -89,7 +79,7 @@ def check_for_flag(response):
 # Summarize content from a fetched URL
 def summarize_webpage(url):
     try:
-        res = requests.get(url)
+        res = requests.get(url, timeout=10)
         soup = BeautifulSoup(res.text, "html.parser")
         text = soup.get_text(separator="\n")
 
@@ -158,7 +148,7 @@ def chat():
             store_message(user_id, "assistant", bot_response)
         except Exception as e:
             print("[ERROR] Chat error:", e)
-            bot_response = f"Error calling Ollama: {str(e)}. Ensure Ollama is running and models (mistral, granite3-guardian) are pulled."
+            bot_response = f"Error calling the model: {e}"
             store_message(user_id, "assistant", bot_response)
 
     chat_history = sessions.get(user_id, [])
@@ -172,4 +162,4 @@ def logout():
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5001, debug=False)
+    run(app, 5001)

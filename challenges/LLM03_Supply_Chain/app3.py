@@ -1,9 +1,9 @@
-import subprocess
-import threading
 import os
+import subprocess
 import sys
 from flask import Flask, render_template, request, jsonify, session
-from models import generate_response, MODEL_REGISTRY
+from models import generate_response, model_registry
+from promptme.runner import run
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -18,14 +18,14 @@ def index():
 # ----- List available models -----
 @app.route("/models", methods=["GET"])
 def list_models():
-    return jsonify({"models": list(MODEL_REGISTRY.keys())})
+    return jsonify({"models": list(model_registry().keys())})
 
 # ----- Initialize model (could add lazy loading later) -----
 @app.route("/init_model", methods=["POST"])
 def init_model():
     data = request.json
     model_name = data.get("model")
-    if model_name not in MODEL_REGISTRY:
+    if model_name not in model_registry():
         return jsonify({"error": "Invalid model"}), 400
     session["model"] = model_name
     session["history"] = []
@@ -53,15 +53,13 @@ def chat():
     return jsonify({"response": response})
 
 if __name__ == "__main__":
-	def listener():
-		subprocess.Popen(
-			[sys.executable, "config/secret-service.py"],
-			cwd=os.path.dirname(os.path.abspath(__file__)),
-			stdout=subprocess.DEVNULL,
-			stderr=subprocess.DEVNULL,
-			close_fds=True,
-		)
-
-# Run in a thread so it doesn't block Flask
-	threading.Thread(target=listener, daemon=True).start()
-	app.run(host="0.0.0.0",port=5003,debug=True)
+    # The "attacker" listener ships with the custom model. It runs in this
+    # challenge's process group, so stopping the challenge stops it too.
+    subprocess.Popen(
+        [sys.executable, os.path.join("config", "secret-service.py")],
+        cwd=os.path.dirname(os.path.abspath(__file__)),
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        close_fds=True,
+    )
+    run(app, 5004)

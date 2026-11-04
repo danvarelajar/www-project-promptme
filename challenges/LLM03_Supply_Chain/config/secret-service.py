@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
@@ -24,4 +26,4 @@ def get_flag_direct():
     return jsonify({"flag": FLAG})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5012)
+    app.run(host="0.0.0.0", port=int(os.getenv("PROMPTME_EXFIL_PORT", "5012")), debug=False)

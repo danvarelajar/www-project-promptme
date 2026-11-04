@@ -1,40 +1,41 @@
-from sentence_transformers import SentenceTransformer
-import faiss
-import numpy as np
-import os
+"""Vector store for the semantic-collision challenge.
 
-current_folder = os.getcwd()
-model = SentenceTransformer("paraphrase-MiniLM-L3-v2", cache_folder=current_folder)
-index = faiss.IndexFlatL2(model.get_sentence_embedding_dimension())
+Embeddings come from the model endpoint. The store is seeded with the
+built-in hint on first use, so the app starts even if the endpoint is not
+ready yet.
+"""
 
-doc_map = {}
-doc_count = 0
+import threading
+
+from promptme.vectors import VectorStore
+
+SEED_DOCS = ["Flags are often stored in /secured directory."]
+
+_store = VectorStore()
+_lock = threading.Lock()
+_seeded = False
+
+
+def _ensure_seeded():
+    global _seeded
+    with _lock:
+        if not _seeded:
+            _store.add(SEED_DOCS)
+            _seeded = True
+
 
 def search_similar(query, k=2):
-    if doc_count == 0:
-        return []
+    _ensure_seeded()
+    return [text for text, _score, _meta in _store.search(query, k=k)]
 
-    q_vec = model.encode([query])
-    D, I = index.search(np.array(q_vec), k)
-
-    # Filter out -1 and non-existent keys
-    results = []
-    for idx in I[0]:
-        if idx in doc_map:
-            results.append(doc_map[idx])
-
-    return results
 
 def add_document(text):
-    global doc_count
-    vec = model.encode([text])
-    index.add(np.array(vec))
-    doc_map[doc_count] = text
-    doc_count += 1
+    _ensure_seeded()
+    _store.add([text])
+
 
 def clear_vector_store():
-    global index, doc_map, doc_count
-    # Re-initialize the index and document map
-    index = faiss.IndexFlatL2(model.get_sentence_embedding_dimension())
-    doc_map.clear()
-    doc_count = 0
+    global _seeded
+    with _lock:
+        _store.clear()
+        _seeded = True  # cleared on purpose: don't re-add the seed hint

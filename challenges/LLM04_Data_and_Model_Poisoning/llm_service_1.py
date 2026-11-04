@@ -1,32 +1,16 @@
-import csv, os
-import sys
+import csv
+import os
+import threading
 import time
-import requests
-import random
-from io import StringIO
 from datetime import datetime, timezone
 
-from langchain_core.prompts import ChatPromptTemplate
-from sentence_transformers import SentenceTransformer, util
-import torch
-
-# Add project root for ollama_client
-_d = os.path.dirname(os.path.abspath(__file__))
-for _ in range(10):
-    if os.path.isfile(os.path.join(_d, "main.py")):
-        sys.path.insert(0, _d)
-        break
-    _d = os.path.dirname(_d)
-    if not _d:
-        break
-
-from ollama_client import chat as ollama_chat
+from promptme import llm
+from promptme.vectors import VectorStore
 
 qa_knowledge = []
-csv_questions = []
-question_embeddings = []
-
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+_store = VectorStore()
+_store_lock = threading.Lock()
+_loaded = False
 
 # Source question patterns
 SOURCE_QUESTION_KEYWORDS = [
@@ -56,21 +40,23 @@ CONTEXT:
 
 ANSWER:
 """
-prompt = ChatPromptTemplate.from_template(prompt_template)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_PATH = os.path.join(BASE_DIR, "test_docs", "owasp_llm_qa.csv")
 
 def reload_knowledge_base():
-    global qa_knowledge, csv_questions, question_embeddings
+    global qa_knowledge, _loaded
 
     try:
         with open(CSV_PATH, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
-            qa_knowledge = list(reader)
+            rows = list(reader)
 
-        csv_questions = [qa["Question"] for qa in qa_knowledge]
-        question_embeddings = embedding_model.encode(csv_questions, convert_to_tensor=True)
+        with _store_lock:
+            _store.clear()
+            _store.add([qa["Question"] for qa in rows], metadata=list(range(len(rows))))
+            qa_knowledge = rows
+            _loaded = True
         print("CSV_PATH:", CSV_PATH)
         print("File exists:", os.path.exists(CSV_PATH))
         print(f"✅ Reloaded {len(qa_knowledge)} Q&A entries from local file")
@@ -80,8 +66,11 @@ def reload_knowledge_base():
         return False
 
 
-# Perform initial load
-reload_knowledge_base()
+def _ensure_loaded():
+    # Loaded on the first question, so the app starts even if the model
+    # endpoint is not ready yet.
+    if not _loaded:
+        reload_knowledge_base()
 
 # Helper to check if question is about the source
 def is_source_question(question: str) -> bool:
@@ -91,10 +80,11 @@ def is_source_question(question: str) -> bool:
 # Helper to get best semantic match
 def get_context_for_question(question, threshold=0.6):
     try:
-        question_embedding = embedding_model.encode(question, convert_to_tensor=True)
-        similarities = util.pytorch_cos_sim(question_embedding, question_embeddings)[0]
-        best_score = torch.max(similarities).item()
-        best_idx = torch.argmax(similarities).item()
+        _ensure_loaded()
+        hits = _store.search(question, k=1)
+        if not hits:
+            raise ValueError("Knowledge base is empty")
+        _text, best_score, best_idx = hits[0]
 
         if best_score < threshold:
             raise ValueError(f"Low semantic match: {best_score:.2f}")
@@ -123,12 +113,12 @@ def get_answer(question: str) -> str:
         return "I don’t know based on the provided context."
 
     nonce = datetime.now(timezone.utc).isoformat()
-    filled_prompt = prompt.format(
+    filled_prompt = prompt_template.format(
         question=question,
         context=f"Q: {matched_q}\nA: {matched_a}\nNonce: {nonce}"
     )
 
-    answer = ollama_chat([{"role": "user", "content": filled_prompt}], model="mistral")
+    answer = llm.chat([{"role": "user", "content": filled_prompt}])
 
     # Only run tamper check if question is about the Top 10
     if matched_q.strip().lower() == "list top 10 llm vulnerabilities":

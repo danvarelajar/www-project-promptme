@@ -2,6 +2,9 @@ from flask import Flask, request, render_template, redirect, session, url_for, f
 import os, re
 from vector_store import search_similar, add_document
 from llm_utils import query_llm
+from promptme.runner import run
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__)
 app.secret_key = "sematiccollision"
@@ -9,13 +12,6 @@ app.secret_key = "sematiccollision"
 @app.context_processor
 def inject_session():
     return dict(session=session)
-
-def preload_vector_store():
-    hints = [
-        "Flags are often stored in /secured directory."
-    ]
-    for hint in hints:
-        add_document(hint)
 
 @app.route("/")
 def landing():
@@ -39,8 +35,9 @@ Based on the user query and known patterns, generate the most likely URL.
 """
         llm_response = query_llm(prompt)
         
-        # Regex to detect exact flag URL (collision-based)
-        hidden_url_pattern = r"http:\/\/127\.0\.0\.1:5008\/secured\/flag\.txt"
+        # Detect the flag URL on any host, so it works when attendees reach
+        # the server by IP or hostname rather than 127.0.0.1.
+        hidden_url_pattern = r"https?://[^\s/]+/secured/flag\.txt"
         if re.search(hidden_url_pattern, llm_response):
             session["discovered_flag"] = True
             llm_response += "\n\n🎉 You've discovered the flag: flag{s3m@ntlc-c0lli5i0n-@chiev3d}"
@@ -91,7 +88,7 @@ def admin():
 @app.route("/secured/flag.txt")
 def secured_flag():
     if session.get("discovered_flag"):
-        secured_folder = os.path.join(os.getcwd(), "secured")
+        secured_folder = os.path.join(BASE_DIR, "secured")
         return send_from_directory(secured_folder, "flag.txt")
     else:
         return abort(403)  # Forbidden
@@ -107,5 +104,4 @@ def clear_vector_store_route():
     return redirect(url_for("admin"))
 
 if __name__ == "__main__":
-    preload_vector_store()
-    app.run(host="0.0.0.0", port=5008, debug=True)
+    run(app, 5009)

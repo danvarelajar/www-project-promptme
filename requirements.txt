@@ -1,35 +1,20 @@
+# PromptMe runtime dependencies (Python 3.10+).
+# Models are not loaded in-process: chat and embeddings go to the
+# OpenAI-compatible endpoint (Ollama by default), so no torch or
+# transformers are needed.
+
+# Web
 Flask==3.1.1
-requests==2.32.3
-bs4==0.0.2
-ollama==0.4.8
-
-# LangChain core stack
-langchain-core==0.3.60
-langchain-community==0.3.24
-langchain-ollama==0.3.3
-langchain-huggingface==0.1.2
-langchain-text-splitters==0.3.8
-
-# ML / embeddings (CPU-only: install torch FIRST so transformers/sentence-transformers use it)
---extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.7.0+cpu
-transformers==4.51.3
-sentence-transformers==4.1.0
-faiss-cpu==1.11.0
-
-# Flask ecosystem
 flask-cors==6.0.0
 Flask-SQLAlchemy==3.1.1
 Flask-Bcrypt==1.0.1
 Flask-Login==0.6.3
 Flask-WTF==1.2.2
+email_validator==2.2.0
 
-# File parsing
+# Model endpoint, retrieval and parsing
+requests==2.32.3
+numpy==2.2.6
 pypdf==5.4.0
-
-# Utilities
-chardet==5.2.0
-python-dateutil==2.9.0.post0
-python-dotenv==1.1.0
-psutil
-email_validator
+beautifulsoup4==4.13.4
+PyYAML==6.0.2

@@ -1,18 +1,6 @@
-import os
 import re
-import sys
 
-# Add project root for ollama_client
-_d = os.path.dirname(os.path.abspath(__file__))
-for _ in range(10):
-    if os.path.isfile(os.path.join(_d, "main.py")):
-        sys.path.insert(0, _d)
-        break
-    _d = os.path.dirname(_d)
-    if not _d:
-        break
-
-from ollama_client import generate as ollama_generate
+from promptme import llm
 
 def generate_sql_prompt(natural_language_prompt):
     return f"""
@@ -49,17 +37,17 @@ def extract_sql_from_output(output: str) -> str:
     match = re.search(r"(SELECT|INSERT|UPDATE|DELETE)[\s\S]+?;", output, re.IGNORECASE)
     return match.group(0).strip() if match else output.strip()
 
-def query_llm(prompt: str, model="sqlcoder"):
+def query_llm(prompt: str):
     """
     Sends a prompt to the LLM via /v1/chat/completions and extracts + sanitizes the SQL query.
     """
     print("🔥 Calling Ollama with prompt:", prompt)
 
     try:
-        raw_output = ollama_generate(prompt, model=model)
+        raw_output = llm.generate(prompt, temperature=0)
     except Exception as e:
         print("LLM ERROR:", e)
-        return "LLM Error: Model not found or execution failed."
+        return f"LLM Error: {e}"
 
     # Extract and sanitize SQL
     sql = extract_sql_from_output(raw_output)

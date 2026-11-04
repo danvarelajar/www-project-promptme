@@ -1,4 +1,5 @@
 from app import app
+from promptme.runner import run
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5009,debug=True)
+    run(app, 5007)
