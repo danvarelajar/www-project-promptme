@@ -4,73 +4,66 @@
 <img src="https://github.com/OWASP/www-project-promptme/blob/main/static/logo.png?raw=true" width="600" alt="Thumbnail"/>
 </p>
 
-### A vulnerable application designed to demonstrate the OWASP Top 10 for Large Language Model (LLM) Applications.
+### A vulnerable application for learning the OWASP Top 10 for LLM Applications (2026 edition).
 
-PromptMe is an educational project that showcases security vulnerabilities in large language models (LLMs) and their web integrations. It includes 10 hands-on challenges inspired by the OWASP LLM Top 10, demonstrating how these vulnerabilities can be discovered and exploited in real-world scenarios.
+PromptMe is a hands-on lab of capture-the-flag challenges, one per risk in the [OWASP Top 10 for LLM Applications 2026](https://github.com/GenAI-Security-Project/GenAI-LLM-Top10). Each challenge is a small, deliberately vulnerable LLM application. Find the weakness, capture the flag, submit it on the dashboard.
 
-This project is intended for AI Security professionals to explore potential security risks in LLMs and learn effective mitigation strategies.
+| 2026 | Risk | Was (2025) | Port |
+|---|---|---|---|
+| LLM01 | Prompt Injection | LLM01 | 5001 |
+| LLM02 | Sensitive Information Disclosure | LLM02 | 5002 |
+| LLM03 | Excessive Agency | LLM06 | 5003 |
+| LLM04 | Supply Chain | LLM03 | 5004 |
+| LLM05 | Data and Model Poisoning | LLM04 | 5005 |
+| LLM06 | Unbounded Consumption | LLM10 | 5006 |
+| LLM07 | Misinformation | LLM09 | 5007 |
+| LLM08 | Hidden Context Exposure | LLM07 | 5008 |
+| LLM09 | Vector and Embedding Weaknesses | LLM08 | 5009 |
+| LLM10 | Improper Output Handling | LLM05 | 5010 |
 
-## Overview (No API Key required)
+## How it fits together
 
-The project is primarily developed using Python and the Ollama framework, with the open source LLM models. The exercises are structured in the form of **CTF (Capture The Flag) challenges**, each with a clear objective, optional hints, and a flag awarded upon successful completion.
+- Every challenge sends all model traffic through **one OpenAI-compatible endpoint** (Ollama by default). Nothing loads a model in-process, so a CPU-only server is enough and a gateway can sit in front of the endpoint without code changes.
+- `challenges.yaml` lists the challenges, their ports and the default models. The dashboard, the launcher and the solver harness all read it.
+- No API key is needed for local Ollama. An optional key (for a gateway) is set in the dashboard settings.
 
-## Gettting started
-
-This guide provides instructions for setting up and running the challenges.
+## Getting started
 
 ### Prerequisites
 
-* Python 3.10 or higher
-* pip (Python package installer)
-* ollama framework 
+- Linux or macOS, Python 3.10+
+- An Ollama server (local or remote) with the models below
 
-### Setup
+```
+ollama pull llama3.2:3b
+ollama pull nomic-embed-text
+```
 
-#### 1. Clone the repository.
-> ```
-> git clone https://github.com/OWASP/www-project-promptme.git
-> ```
+Other models work too: choose them in the dashboard settings, or set `PROMPTME_CHAT_MODEL` / `PROMPTME_EMBED_MODEL`.
 
-#### 2. Go to challenge directory.
-> ```
-> cd PromptMe
-> ```
+### Setup and run
 
-#### 3. Install the dependencies.
-> ```
-> pip install -r requirements.txt
-> ```
+```
+git clone https://github.com/danvarelajar/www-project-promptme.git
+cd www-project-promptme
+./promptme.sh setup     # creates .venv and installs requirements
+./promptme.sh check     # can we reach the endpoint, are the models there?
+./promptme.sh start     # dashboard on port 5000
+```
 
-#### 4. Download and Run Ollama
+Open `http://<your-server>:5000`, set the model endpoint under **Settings** if Ollama isn't on `localhost:11434`, then start a challenge.
 
-> Download Ollama depending on your OS from https://ollama.com/download
->```
-> ollama serve (in the separate terminal)
-> ollama pull mistral
-> ollama pull llama3
-> ollama pull sqlcoder
-> ollama pull granite3.1-moe:1b
-> ollama pull granite3-guardian
->```
->or Spawn Ollama via docker using the below command
-> ```
-> docker run -d --name ollama_server -p 11434:11434 ollama/ollama:latest
-> docker exec -it ollama_server ollama pull <model_name>
-> docker exec -it ollama_server ollama run <model_name>
-> ```
+Other commands: `./promptme.sh status`, `./promptme.sh stop`, `./promptme.sh restart`. Logs are in `logs/`. On macOS, port 5000 is taken by AirPlay Receiver: run `PROMPTME_PORT=5100 ./promptme.sh start`.
 
-#### 5. Access the application
+### For challenge authors
 
-> ```
-> python main.py
-> ```
-Access the application @ http://127.0.0.1:5000
-
-#### 6. Start the challenge by clicking *start* button on particular category e.g. LLM01
+- `/ui-kit` on the dashboard shows the shared components (streaming chat, "Under the hood" panel, flag banner).
+- `.venv/bin/python tools/solve.py [ids] -n 10` measures how reliably each challenge can be solved with the configured model.
+- `.venv/bin/python tools/mock_endpoint.py` runs a fake endpoint for testing without a model.
 
 ## Compatibility 
 
-This project currently supports macOS and Linux systems. Windows compatibility is in progress and will be released in an upcoming update.
+PromptMe runs on Linux and macOS.
 
 ## Spoilers
 
