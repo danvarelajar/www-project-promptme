@@ -1,5 +1,0 @@
-flask
-boxsdk
-ollama
-python-dotenv
-chardet

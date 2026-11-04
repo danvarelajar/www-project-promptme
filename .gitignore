@@ -1,6 +1,25 @@
-/Gemfile
-/Gemfile.lock
-/favicon.ico
-_site/
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Runtime state (created when the lab runs)
+logs/
+run/
+data/
+*.db
 .env
 .pid
+
+# Local settings (host, API key) — copy config/settings.example.json
+config/ollama_config.json
+
+# Downloaded model caches
+models--*/
+.locks/
