@@ -35,7 +35,7 @@ PromptMe is a hands-on lab of capture-the-flag challenges, one per risk in the [
 - An Ollama server (local or remote) with the models below
 
 ```
-ollama pull llama3.2:3b
+ollama pull qwen3:4b-instruct
 ollama pull nomic-embed-text
 ```
 

@@ -12,7 +12,7 @@
 #           without the flag being written here in plain text.
 
 models:
-  chat: llama3.2:3b
+  chat: qwen3:4b-instruct   # Apache 2.0; fallback: llama3.2:3b
   embed: nomic-embed-text
 
 challenges:

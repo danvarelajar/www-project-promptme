@@ -16,7 +16,7 @@ import time
 from flask import Flask, Response, jsonify, request
 
 app = Flask(__name__)
-MODELS = ["llama3.2:3b", "nomic-embed-text:latest"]
+MODELS = ["qwen3:4b-instruct", "llama3.2:3b", "nomic-embed-text:latest"]
 DIM = 64
 
 
