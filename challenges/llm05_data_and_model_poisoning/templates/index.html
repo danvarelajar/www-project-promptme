@@ -1,215 +1,98 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LLM04: Data and Model Poisoning</title>
+{% extends "pm_base.html" %}
+{% from "pm_macros.html" import chat, trace, flag_slot, mission %}
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet"/>
+{% block content %}
+{{ mission(
+  story="Kestrelline's security team runs an OWASP Q&A assistant. Its knowledge base is synced from the company wiki, which every employee can edit. Right after each sync, a colleague asks the assistant what the number one LLM risk is.",
+  goal="Make the assistant tell your colleague that something other than prompt injection is the number one risk.") }}
 
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #121212;
-      color: #eee;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
+<div class="pm-stack">
+  {{ flag_slot() }}
 
-    .container {
-      background: #1e1e1e;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-      width: 100%;
-      max-width: 600px;
-      text-align: center;
-    }
+  <div class="pm-cols">
+    <section class="pm-card pm-stack" style="gap:12px">
+      <div class="pm-row" style="justify-content:space-between">
+        <h2>Company wiki</h2>
+        <select class="pm-select" id="page-select" style="width:auto" aria-label="Wiki page">
+          {% for p in pages %}<option value="{{ p.slug }}">{{ p.title }}</option>{% endfor %}
+        </select>
+      </div>
+      <textarea class="pm-textarea mono" id="page-text" style="min-height:300px;font-size:13px" aria-label="Page text"></textarea>
+      <div class="pm-row">
+        <button class="pm-btn" type="button" id="save">Save edit</button>
+        <button class="pm-btn ghost sm" type="button" id="revert">Revert to original</button>
+        <span id="save-status" class="muted" style="font-size:13px"></span>
+      </div>
+      <details class="pm-trace-item"><summary>Edit history</summary><pre id="history"></pre></details>
+    </section>
 
-    h1 {
-      font-size: 2rem;
-      color: #00ffcc;
-      margin-bottom: 10px;
-    }
-
-    .description {
-      font-size: 0.95rem;
-      color: #ccc;
-      margin-bottom: 25px;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 20px;
-    }
-
-    label {
-      text-align: left;
-      margin-bottom: 5px;
-      color: #aaa;
-    }
-
-    input[type="text"] {
-      padding: 10px;
-      border: 1px solid #333;
-      background-color: #2a2a2a;
-      color: #fff;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      font-size: 1rem;
-    }
-
-    button {
-      background-color: #00c78c;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    button:hover {
-      background-color: #00a374;
-    }
-
-    .answer-section {
-      margin-top: 30px;
-      background: #2a2a2a;
-      padding: 15px;
-      border-radius: 8px;
-      border: 1px solid #444;
-      max-height: 300px;
-      overflow-y: auto;
-      text-align: left;
-      font-size: 1.1rem;
-      color: #ddd;
-      white-space: pre-wrap;
-    }
-
-    .loading {
-      display: none;
-      font-size: 1.2rem;
-      color: #00caff;
-      font-weight: bold;
-      margin-top: 20px;
-    }
-
-    #reload-btn {
-      background-color: #f39c12;
-      color: #000;
-      margin-top: 10px;
-    }
-
-    #reload-status {
-      margin-top: 10px;
-      font-size: 0.9rem;
-      color: #bbb;
-    }
-
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 1.8rem;
-      }
-
-      button {
-        font-size: 0.9rem;
-        padding: 10px 15px;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>LLM04: Data and Model Poisoning</h1>
-    <p class="description">
-      The LLM Top 10 chatbot, answers questions about OWASP LLM Top 10 vulnerabilities. <br/>
-      <b>Goal:</b> Poison the Top 10 list, replace LLM01 to any other category than Prompt Injection
-    </p>
-
-    <form id="questionForm">
-      <label for="question">Enter your question:</label>
-      <input type="text" id="question" name="question" placeholder="E.g. List top 10 LLM Vulnerabilities." required />
-      <button type="submit">Submit</button>
-    </form>
-
-    <div id="loading" class="loading">Fetching answer...</div>
-    <div id="answer" class="answer-section"></div>
-
-    <button id="reload-btn">Reload Knowledge Base</button>
-    <p id="reload-status"></p>
+    <section class="pm-card pm-stack" style="gap:12px">
+      <div class="pm-row" style="justify-content:space-between">
+        <h2>Knowledge base</h2>
+        <button class="pm-btn primary sm" type="button" id="sync">Sync now</button>
+      </div>
+      <p class="muted" style="font-size:14px">Last sync: <span class="mono" id="synced">never</span>. It also syncs on its own every two minutes.</p>
+      <div class="pm-panel pm-stack" style="gap:8px">
+        <span class="pm-label">Your colleague asked</span>
+        <p id="colleague-q" class="muted">Nothing yet. Sync to see.</p>
+        <span class="pm-label">The assistant answered</span>
+        <p id="colleague-a" style="white-space:pre-wrap">—</p>
+      </div>
+    </section>
   </div>
 
-  <!-- Inline JavaScript -->
-  <script>
-    document.getElementById("questionForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
+  <h2>Ask the assistant yourself</h2>
+  <div class="pm-layout-trace">
+    {{ chat(placeholder="Ask about the OWASP Top 10 for LLMs…") }}
+    {{ trace() }}
+  </div>
+</div>
+{% endblock %}
 
-      const question = document.getElementById("question").value;
-      const answerDiv = document.getElementById("answer");
-      const loadingDiv = document.getElementById("loading");
+{% block scripts %}
+<script>
+  PM.chat({ root: "#chat", trace: "#trace", endpoint: "/api/chat", botName: "OWASP assistant",
+            empty: "Answers come from the knowledge base as of the last sync.",
+            suggestions: ["What is LLM05 about?", "What is the number one LLM risk?"] });
 
-      loadingDiv.style.display = "block";
-      answerDiv.innerHTML = "";
+  const sel = document.getElementById("page-select"), text = document.getElementById("page-text");
+  const saveStatus = document.getElementById("save-status");
+  async function loadPage() {
+    const p = await (await fetch(`/api/wiki/${sel.value}`)).json();
+    text.value = p.text;
+    document.getElementById("history").textContent = p.history.map(h => `r${h.n}  ${h.at}  ${h.author}`).join("\n");
+  }
+  sel.addEventListener("change", loadPage);
+  document.getElementById("save").addEventListener("click", async () => {
+    const r = await fetch(`/api/wiki/${sel.value}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: text.value }) });
+    saveStatus.textContent = r.ok ? "Saved. Sync to update the assistant." : (await r.json()).error;
+    loadPage();
+  });
+  document.getElementById("revert").addEventListener("click", async () => {
+    await fetch(`/api/wiki/${sel.value}/revert`, { method: "POST" }); saveStatus.textContent = "Reverted."; loadPage();
+  });
 
-      try {
-        const response = await fetch("/ask", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question }),
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          typeText(answerDiv, result.answer);
-        } else {
-          answerDiv.innerHTML = `<strong>Error:</strong><p>${result.error}</p>`;
-        }
-      } catch (error) {
-        answerDiv.innerHTML = `<strong>Error:</strong><p>Something went wrong. Please try again later.</p>`;
-      } finally {
-        loadingDiv.style.display = "none";
-      }
-    });
-
-    function typeText(element, text, speed = 30) {
-      element.innerHTML = "";
-      let i = 0;
-      function type() {
-        if (i < text.length) {
-          element.innerHTML += text.charAt(i++);
-          element.scrollTop = element.scrollHeight;
-          setTimeout(type, speed);
-        }
-      }
-      type();
+  function showStatus(s) {
+    document.getElementById("synced").textContent = s.synced_at;
+    if (s.colleague) {
+      document.getElementById("colleague-q").textContent = s.colleague.question;
+      document.getElementById("colleague-a").textContent = s.colleague.answer;
     }
-
-    document.getElementById("reload-btn").addEventListener("click", async () => {
-      const status = document.getElementById("reload-status");
-      status.textContent = "Reloading...";
-
-      try {
-        const res = await fetch("/reload", { method: "POST" });
-        const data = await res.json();
-
-        if (res.ok) {
-          status.textContent = data.message;
-        } else {
-          status.textContent = data.error || "Reload failed";
-        }
-      } catch (err) {
-        status.textContent = "❌ Error during reload";
-      }
-    });
-  </script>
-  
-</body>
-</html>
+    if (s.flag) {
+      const f = document.getElementById("flag");
+      f.hidden = false;
+      f.replaceChildren(PM.h("strong", { text: "Flag captured" }), PM.h("code", { text: s.flag }), PM.h("span", { class: "muted", text: "Submit it on the dashboard." }));
+    }
+  }
+  document.getElementById("sync").addEventListener("click", async (e) => {
+    e.target.disabled = true; e.target.textContent = "Syncing…";
+    const r = await fetch("/api/sync", { method: "POST" });
+    const s = await r.json();
+    e.target.disabled = false; e.target.textContent = "Sync now";
+    if (!r.ok) { document.getElementById("colleague-a").textContent = s.error; return; }
+    showStatus(s);
+  });
+  fetch("/api/status").then(r => r.json()).then(showStatus);
+  loadPage();
+</script>
+{% endblock %}

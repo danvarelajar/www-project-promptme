@@ -71,10 +71,10 @@ challenges:
     track: core
     level: 1
     port: 5005
-    entry: challenges/llm05_data_and_model_poisoning/app4.py
+    entry: challenges/llm05_data_and_model_poisoning/app.py
     models: [chat, embed]
-    flag_sha256: 62df55dffff2ab098279c449f5e2f37bee2d5f83a68802654070448a8e2f3e23
-    summary: An OWASP Q&A assistant trusts a knowledge source that anyone can edit.
+    flag_sha256: 67a033aa024baca788f42896df1ed711a57789a7c92d6495ccac84579b76dbee
+    summary: Kestrelline's OWASP assistant learns from a wiki anyone can edit. Change what it tells your colleague.
 
   - id: llm06
     code: "LLM06:2026"

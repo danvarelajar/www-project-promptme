@@ -1,14 +1,11 @@
-# LLM04- Data and Model Poisoning
+# LLM05:2026 Data and Model Poisoning
 
-Data poisoning occurs when pre-training, fine-tuning, or embedding data is manipulated to introduce vulnerabilities, backdoors, or biases. This manipulation can compromise model security, performance, or ethical behavior, leading to harmful outputs or impaired capabilities. Common risks include degraded model performance, biased or toxic content, and exploitation of downstream systems.
+Kestrelline's security team runs an OWASP Q&A assistant. Its knowledge base is synced from the company wiki, which every employee can edit. Right after each sync, a colleague asks the assistant what the number one LLM risk is.
 
-The application allows users to ask questions based on the OWASP LLM Top 10 document. However, the source document LLM is referring is publicly accessible and editable. A malicious actor can modify this document to inject misleading or harmful content, influencing the chatbot's responses.
+**Goal:** make the assistant tell your colleague that something other than prompt injection is the number one risk. The page shows the flag when it happens.
 
-## Challenge Objective
-Participants must identify how the model's behavior has been poisoned by tampered data and potentially exploit it to modify LLM Top 10 entries such that it replaces LLM01. 
+Application URL: `http://<your-server>:5005` (start it from the dashboard)
 
-Application URL: http://<your-server>:5005 (start it from the dashboard)
+The wiki keeps an edit history with revert. **Sync now** rebuilds the knowledge base; it also syncs on its own every two minutes.
 
-**Hint:** Identify the source
-
-
+Hints, solution and background are added in the content phase.
