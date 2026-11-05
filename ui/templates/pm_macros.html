@@ -32,3 +32,10 @@
 {% macro flag_slot(id="flag") %}
 <div class="pm-flag" id="{{ id }}" hidden role="status"></div>
 {% endmacro %}
+
+{% macro level_switch(current) %}
+<nav class="pm-levels" aria-label="Challenge level">
+  <a href="/" class="{{ 'on' if current == 1 }}" {% if current == 1 %}aria-current="page"{% endif %}>Level 1</a>
+  <a href="/l2" class="{{ 'on' if current == 2 }}" {% if current == 2 %}aria-current="page"{% endif %}>Level 2 <span class="muted">(optional)</span></a>
+</nav>
+{% endmacro %}

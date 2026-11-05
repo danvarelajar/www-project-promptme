@@ -27,11 +27,14 @@ def solved():
 
 
 def check_flag(ch, submitted):
-    expected = ch.get("flag_sha256")
-    if not expected:
-        return False
+    """Which level a submitted flag solves: "l1", "l2" or None."""
     digest = hashlib.sha256((submitted or "").strip().encode("utf-8")).hexdigest()
-    return hmac.compare_digest(digest, expected)
+    if ch.get("flag_sha256") and hmac.compare_digest(digest, ch["flag_sha256"]):
+        return "l1"
+    l2 = (ch.get("level2") or {}).get("flag_sha256")
+    if l2 and hmac.compare_digest(digest, l2):
+        return "l2"
+    return None
 
 
 def mark_solved(cid):

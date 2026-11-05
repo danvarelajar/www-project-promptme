@@ -1,6 +1,7 @@
-"""Update one challenge's entry, flag hash and summary in challenges.yaml.
+"""Update a challenge in challenges.yaml.
 
-    .venv/bin/python tools/set_entry.py llm02 challenges/llm02_x/app.py "flag{...}" "Summary text."
+    .venv/bin/python tools/set_entry.py llm02 challenges/llm02_x/app.py "flag{...}" "Summary."
+    .venv/bin/python tools/set_entry.py --level2 llm03 "Title" "flag{...}" "Summary."
 """
 import hashlib
 import pathlib
@@ -20,5 +21,22 @@ def set_entry(cid, entry, flag, summary):
     p.write_text(s.replace(block, nb))
 
 
+
+
+def set_level2(cid, title, flag, summary):
+    """Add or replace the optional level2 block of a challenge."""
+    p = ROOT / "challenges.yaml"
+    s = p.read_text()
+    block = re.search(rf"  - id: {cid}\n(?:    .*\n)+", s).group(0)
+    nb = re.sub(r"    level2:\n(?:      .*\n)+", "", block)
+    nb += (f"    level2:\n      title: {title}\n"
+           f"      flag_sha256: {hashlib.sha256(flag.encode()).hexdigest()}\n"
+           f"      summary: {summary}\n")
+    p.write_text(s.replace(block, nb))
+
+
 if __name__ == "__main__":
-    set_entry(*sys.argv[1:5])
+    if sys.argv[1] == "--level2":
+        set_level2(*sys.argv[2:6])
+    else:
+        set_entry(*sys.argv[1:5])

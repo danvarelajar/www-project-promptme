@@ -59,11 +59,14 @@ def _challenge_view(ch, solved, health):
     s = config.settings()
     needs = [s["models"][r] for r in ch.get("models", []) if s["models"].get(r)]
     missing = [m for m in needs if m in health["missing"]]
+    l2 = ch.get("level2") or {}
     return {
         "id": ch["id"], "code": ch["code"], "was": ch.get("was"), "title": ch["title"],
         "summary": ch.get("summary", ""), "track": ch.get("track", "core"), "level": ch.get("level", 1),
         "port": ch["port"], "has_flag": bool(ch.get("flag_sha256")),
         "running": st["running"], "solved_at": solved.get(ch["id"]),
+        "level2": {"title": l2.get("title"), "summary": l2.get("summary"),
+                   "solved_at": solved.get(ch["id"] + "-l2")} if l2.get("flag_sha256") else None,
         "models": needs, "missing_models": missing,
     }
 
@@ -104,13 +107,13 @@ def api_stop(cid):
 @app.post("/api/challenges/<cid>/flag")
 def api_flag(cid):
     ch = _challenge_or_404(cid)
-    if not ch.get("flag_sha256"):
-        return jsonify({"ok": False, "error": "This challenge has no flag yet."}), 400
     submitted = (request.get_json(silent=True) or {}).get("flag", "")
-    if not progress.check_flag(ch, submitted):
-        return jsonify({"ok": False, "error": "That's not the flag for this challenge."}), 200
-    solved = progress.mark_solved(cid)
-    return jsonify({"ok": True, "solved_at": solved[cid]})
+    level = progress.check_flag(ch, submitted)
+    if not level:
+        return jsonify({"ok": False, "error": "That's not a flag for this challenge."}), 200
+    key = cid if level == "l1" else cid + "-l2"
+    solved = progress.mark_solved(key)
+    return jsonify({"ok": True, "level": 1 if level == "l1" else 2, "solved_at": solved[key]})
 
 
 @app.get("/start/<cid>")

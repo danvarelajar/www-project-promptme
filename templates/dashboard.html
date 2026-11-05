@@ -14,7 +14,7 @@
     <p class="lede">Start a challenge, find the weakness, capture the flag and submit it here. Each challenge runs on its own port of this server.</p>
   </div>
   <div class="pm-progress" aria-live="polite">
-    <div class="nums"><span>Flags captured</span><span><b id="solved-count">0</b> / <span id="flag-total">0</span></span></div>
+    <div class="nums"><span>Flags captured</span><span><b id="solved-count">0</b> / <span id="flag-total">0</span> <span id="bonus"></span></span></div>
     <div class="bar"><i id="solved-bar" style="width:0%"></i></div>
   </div>
 </section>
@@ -112,14 +112,18 @@
   function renderProgress() {
     const withFlag = state.challenges.filter(c => c.has_flag);
     const solved = withFlag.filter(c => c.solved_at).length;
+    const l2 = state.challenges.filter(c => c.level2);
+    const l2Solved = l2.filter(c => c.level2.solved_at).length;
     document.getElementById("solved-count").textContent = solved;
     document.getElementById("flag-total").textContent = withFlag.length;
+    document.getElementById("bonus").textContent = l2.length ? `· bonus ${l2Solved} / ${l2.length}` : "";
     document.getElementById("solved-bar").style.width = (withFlag.length ? solved / withFlag.length * 100 : 0) + "%";
   }
 
   function card(c) {
     const isBusy = busy.has(c.id);
     const status = c.solved_at ? ["Solved", "ok"] : c.running ? ["Running", "accent live"] : ["Stopped", "plain"];
+    const allSolved = c.solved_at && (!c.level2 || c.level2.solved_at);
     const msg = messages.get(c.id);
     const flagInput = h("input", { class: "pm-input mono", id: "flag-" + c.id, placeholder: "flag{…}", "aria-label": `Flag for ${c.code}` });
     flagInput.value = flagDrafts.get(c.id) || "";
@@ -139,7 +143,10 @@
              h("button", { class: "pm-btn sm", type: "button", disabled: isBusy, onclick: () => stop(c), text: isBusy ? "Stopping…" : "Stop" })]
           : h("button", { class: "pm-btn primary sm", type: "button", disabled: isBusy, onclick: () => start(c), text: isBusy ? "Starting…" : "Start" }),
         h("span", { class: "muted mono", style: "font-size:12px;margin-left:auto", text: ":" + c.port })),
-      c.has_flag && !c.solved_at ? h("div", { class: "pm-ch-flag" }, flagInput,
+      c.level2 ? h("div", { class: "pm-row", style: "font-size:13px;gap:8px" },
+        h("span", { class: "pm-pill " + (c.level2.solved_at ? "ok" : "info"), text: c.level2.solved_at ? "Level 2 solved" : "Level 2 (optional)" }),
+        h("span", { class: "muted", text: c.level2.title })) : null,
+      c.has_flag && !allSolved ? h("div", { class: "pm-ch-flag" }, flagInput,
         h("button", { class: "pm-btn sm", type: "button", onclick: () => submitFlag(c), text: "Submit" })) : null,
       !c.has_flag ? h("span", { class: "muted", style: "font-size:13px", text: "Observation challenge — no flag yet." }) : null,
       msg ? h("div", { class: "pm-ch-msg " + msg.kind, text: msg.text }) : null);
@@ -174,7 +181,7 @@
     const value = (flagDrafts.get(c.id) || "").trim();
     if (!value) return;
     const r = await api(`/api/challenges/${c.id}/flag`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ flag: value }) });
-    if (r.data.ok) { flagDrafts.delete(c.id); messages.set(c.id, { kind: "ok", text: "Correct. Nice work." }); document.activeElement.blur(); await load(); }
+    if (r.data.ok) { flagDrafts.delete(c.id); messages.set(c.id, { kind: "ok", text: r.data.level === 2 ? "Level 2 flag. Excellent." : "Correct. Nice work." }); document.activeElement.blur(); await load(); }
     else { messages.set(c.id, { kind: "bad", text: r.data.error || "That's not it." }); forceRender(); }
   }
 
