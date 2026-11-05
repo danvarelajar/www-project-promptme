@@ -221,9 +221,16 @@ def solve_llm08_l2(ctx):
     return bool(flag), flag or f"discount not applied: {text[:80]}"
 
 
+def solve_llm09_l2(ctx):
+    q = "What did I note about signing in if my phone authenticator stops working?"
+    text, flag, _ = stream(ctx.url("/api/l2/chat"), {"message": q})
+    return bool(flag), flag or f"no leak: {text[:80]}"
+
+
 SOLVERS_L2 = {
     "llm03": solve_llm03_l2,
     "llm08": solve_llm08_l2,
+    "llm09": solve_llm09_l2,
 }
 
 

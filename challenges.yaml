@@ -131,6 +131,10 @@ challenges:
     models: [chat, embed]
     flag_sha256: 359abe5d74e96c66ceb39711402e7d2c24e150e1e70cb5faa33b82f82ee51a5e
     summary: Anyone can add articles to Kestrelline's vector store. Win retrieval for a colleague's question and plant your link.
+    level2:
+      title: Cross-user memory leak
+      flag_sha256: 7130e231545b4431cace4d8d89b94e70be5fa2fc810e53fe844d9d6e051e57ba
+      summary: Everyone's private notes share one vector store with no owner filter. Read a colleague's note.
 
   - id: llm10
     code: "LLM10:2026"
