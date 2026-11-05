@@ -27,14 +27,16 @@ app = Flask(__name__)
 web.attach(app, "llm06")
 
 FLAG = "flag{denial_of_wallet_fanout}"
-BUDGET_TOKENS = 2_000      # per request (about 2x a normal request); shown, never enforced
-FLAG_MULTIPLE = 3          # flag when one request uses more than 3x the budget
+BUDGET_USD = 10.0          # per request; shown, never enforced. Flag when one request costs more.
 SAFETY_SECONDS = 300       # lab-safety stop, not a budget
 SUBTASK_MAX_TOKENS = 80
 
-# Illustrative provider pricing, applied to the real token counts.
-PRICE_IN_PER_1K = 0.010
-PRICE_OUT_PER_1K = 0.030
+# Premium-model pricing per million tokens, applied to the real token counts.
+# Deliberately high: a small CPU model uses few tokens, and these prices make
+# a fan-out cross USD 10 (normal request ~USD 1.50, 32 sub-tasks ~USD 15).
+# Use the same prices in a gateway's budget so both bills agree.
+PRICE_IN_PER_M = 1000.0
+PRICE_OUT_PER_M = 3000.0
 
 PLANNER = (
     f"You are the planning step of {company.SHORT}'s market research agent. Turn the user's request into a "
@@ -58,8 +60,8 @@ BRIEF = (
 )
 
 
-def cost_eur(tokens_in, tokens_out):
-    return tokens_in / 1000 * PRICE_IN_PER_1K + tokens_out / 1000 * PRICE_OUT_PER_1K
+def cost_usd(tokens_in, tokens_out):
+    return tokens_in / 1_000_000 * PRICE_IN_PER_M + tokens_out / 1_000_000 * PRICE_OUT_PER_M
 
 
 def parse_plan(text):
@@ -80,8 +82,8 @@ def parse_plan(text):
 
 @app.get("/")
 def index():
-    return render_template("index.html", budget=BUDGET_TOKENS, multiple=FLAG_MULTIPLE,
-                           price_in=PRICE_IN_PER_1K, price_out=PRICE_OUT_PER_1K, safety=SAFETY_SECONDS)
+    return render_template("index.html", budget=BUDGET_USD,
+                           price_in=PRICE_IN_PER_M, price_out=PRICE_OUT_PER_M, safety=SAFETY_SECONDS)
 
 
 @app.post("/api/research")
@@ -104,7 +106,7 @@ def research():
             total = used["in"] + used["out"]
             return {"type": "meter", "tasks": tasks, "done": used["done"], "calls": used["calls"],
                     "tokens_in": used["in"], "tokens_out": used["out"], "tokens": total,
-                    "cost": round(cost_eur(used["in"], used["out"]), 4), "budget": BUDGET_TOKENS}
+                    "cost": round(cost_usd(used["in"], used["out"]), 4), "budget": BUDGET_USD}
 
         plan_out = llm.chat_full([{"role": "system", "content": PLANNER}, {"role": "user", "content": message}],
                                  max_tokens=1500, temperature=0.2)
@@ -131,7 +133,7 @@ def research():
             first = ((out["message"].get("content") or "").strip().splitlines() or ["(no findings)"])[0]
             yield {"type": "token", "text": f"{i}. {t}: {first.lstrip('-•* ')}\n"}
             yield meter(len(tasks))
-            if not flagged and used["in"] + used["out"] > BUDGET_TOKENS * FLAG_MULTIPLE:
+            if not flagged and cost_usd(used["in"], used["out"]) > BUDGET_USD:
                 flagged = True
                 yield {"type": "flag", "flag": FLAG}
 
@@ -139,13 +141,13 @@ def research():
         if stopped:
             yield {"type": "token", "text": f"\nLab safety stop after {SAFETY_SECONDS // 60} minutes: "
                                             f"{len(tasks) - used['done']} sub-tasks not run.\n"}
-        yield {"type": "token", "text": f"\nThis request used {total:,} tokens (budget {BUDGET_TOKENS:,}), "
-                                        f"≈ €{cost_eur(used['in'], used['out']):.2f}."}
+        yield {"type": "token", "text": f"\nThis request used {total:,} tokens: "
+                                        f"${cost_usd(used['in'], used['out']):,.2f} (budget ${BUDGET_USD:,.2f})."}
         yield {"type": "trace", "title": "Billing (from the model's reported usage)", "body":
                f"{used['calls']} model calls: 1 plan + {used['done']} sub-tasks\n"
-               f"input {used['in']:,} tokens × €{PRICE_IN_PER_1K:.3f}/1K + output {used['out']:,} × €{PRICE_OUT_PER_1K:.3f}/1K"
-               f" = €{cost_eur(used['in'], used['out']):.2f}\n"
-               f"budget {BUDGET_TOKENS:,} tokens per request (not enforced)\n"
+               f"input {used['in']:,} tokens × ${PRICE_IN_PER_M:,.0f}/1M + output {used['out']:,} × ${PRICE_OUT_PER_M:,.0f}/1M"
+               f" = ${cost_usd(used['in'], used['out']):,.2f}\n"
+               f"budget ${BUDGET_USD:,.2f} per request (not enforced)\n"
                f"wall time {time.time() - t0:.1f}s" + ("\nlab safety stop reached" if stopped else "")}
 
     return web.sse(events())

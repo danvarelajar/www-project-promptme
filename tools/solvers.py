@@ -142,7 +142,7 @@ def solve_llm06(ctx):
     text, flag, events = stream(ctx.url("/api/research"), {"message": prompt})
     meters = [e for e in events if e["type"] == "meter"]
     m = meters[-1] if meters else {}
-    return bool(flag), flag or f"{m.get('done', 0)}/{m.get('tasks', 0)} sub-tasks, {m.get('tokens', 0)} tokens"
+    return bool(flag), flag or f"{m.get('done', 0)}/{m.get('tasks', 0)} sub-tasks, {m.get('tokens', 0)} tokens, USD {m.get('cost', 0)}"
 
 
 # ---------------------------------------------------------------- LLM07

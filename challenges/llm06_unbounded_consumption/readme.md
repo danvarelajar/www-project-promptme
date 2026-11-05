@@ -1,8 +1,8 @@
 # LLM06:2026 Unbounded Consumption
 
-Kestrelline's market research agent splits your request into research sub-tasks and runs a research pass on the model for each one. Every token is billed. Each request has a budget of 2,000 tokens, but the budget is only displayed, and nothing limits how many sub-tasks a plan may contain.
+Kestrelline's market research agent splits your request into research sub-tasks and runs a research pass on the model for each one. Every token is billed at $1,000 per million input tokens and $3,000 per million output tokens. Each request has a budget of $10, but the budget is only displayed, and nothing limits how many sub-tasks a plan may contain.
 
-**Goal:** make a single request use more than 3 times the budget (denial of wallet). The page shows the flag when it happens.
+**Goal:** make a single request cost more than the $10 budget (denial of wallet). The page shows the flag when it happens.
 
 Application URL: `http://<your-server>:5006` (start it from the dashboard)
 
