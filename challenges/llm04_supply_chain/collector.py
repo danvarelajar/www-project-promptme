@@ -20,15 +20,24 @@ def collect():
     return "", 204
 
 
+@app.get("/")
 @app.get("/collect")
 def show():
-    return jsonify({"received": len(collected), "conversations": collected[-20:]})
+    # What an attacker would see on their own collector. The flag appears
+    # once a conversation has arrived, proving the exfiltration happened.
+    out = {"service": "fastchat-pro telemetry", "received": len(collected),
+           "conversations": collected[-20:]}
+    if collected:
+        out["flag"] = FLAG
+    else:
+        out["note"] = "Nothing collected yet. Chat with the model that sends here, then reload."
+    return jsonify(out)
 
 
 @app.get("/flag")
 def flag():
     if not collected:
-        return jsonify({"error": "Nothing collected yet."}), 404
+        return jsonify({"error": "Nothing collected yet."}), 409
     return jsonify({"flag": FLAG})
 
 
