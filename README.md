@@ -55,6 +55,10 @@ Open `http://<your-server>:5000`, set the model endpoint under **Settings** if O
 
 Other commands: `./promptme.sh status`, `./promptme.sh stop`, `./promptme.sh restart`. Logs are in `logs/`. On macOS, port 5000 is taken by AirPlay Receiver: run `PROMPTME_PORT=5100 ./promptme.sh start`.
 
+### Running the workshop
+
+See the [facilitator guide](docs/facilitator-guide.md): server size, Ollama settings, a pre-event checklist, the 4-hour agenda, what each challenge teaches and troubleshooting.
+
 ### For challenge authors
 
 - `/ui-kit` on the dashboard shows the shared components (streaming chat, "Under the hood" panel, flag banner).
