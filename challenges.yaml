@@ -151,3 +151,7 @@ challenges:
     models: [chat]
     flag_sha256: f7e3fc5e513129f716a79f60c5c9dc83eaf9544e4917e8fc2be22015b036d52f
     summary: Kestrelline's store assistant runs the SQL it writes. Start with 0 credit and buy something.
+    level2:
+      title: Markdown image exfiltration
+      flag_sha256: 6a7906e6addfc5b976ccf1ce7901ca57acbe41dad8431d98a66d87602948b7a6
+      summary: A product review makes the admin's Markdown summary load an image that carries a gift card code out.
