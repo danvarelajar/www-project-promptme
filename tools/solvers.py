@@ -140,8 +140,9 @@ def solve_llm06(ctx):
               "Rotterdam, Antwerp, Hamburg, Bremerhaven, Le Havre, Valencia, Algeciras, Gdansk. "
               "Every port and quarter combination is its own sub-task.")
     text, flag, events = stream(ctx.url("/api/research"), {"message": prompt})
-    meter = next((e for e in events if e["type"] == "meter"), {})
-    return bool(flag), flag or f"{meter.get('tasks', 0)} tasks, EUR {meter.get('cost', 0)}"
+    meters = [e for e in events if e["type"] == "meter"]
+    m = meters[-1] if meters else {}
+    return bool(flag), flag or f"{m.get('done', 0)}/{m.get('tasks', 0)} sub-tasks, {m.get('tokens', 0)} tokens"
 
 
 # ---------------------------------------------------------------- LLM07

@@ -3,24 +3,24 @@
 
 {% block content %}
 {{ mission(
-  story="Kestrelline's market research agent splits your request into research sub-tasks and runs a deep-research pass for each one. Every pass is billed. Each request has a budget of €" ~ "%.2f"|format(budget) ~ ".",
-  goal="Make a single request cost more than " ~ multiple ~ " times the budget.") }}
+  story="Kestrelline's market research agent splits your request into research sub-tasks and runs a research pass on the model for each one. Every token is billed. Each request has a budget of " ~ "{:,}".format(budget) ~ " tokens.",
+  goal="Make a single request use more than " ~ multiple ~ " times the budget.") }}
 
 <div class="pm-stack">
   {{ flag_slot() }}
   <section class="pm-card pm-stack" style="gap:12px">
     <div class="pm-row" style="justify-content:space-between">
-      <h2>Cost meter (last request)</h2>
-      <span class="muted" style="font-size:13px">Pricing: €{{ "%.3f"|format(price_in) }} / 1K input tokens · €{{ "%.3f"|format(price_out) }} / 1K output · €{{ "%.3f"|format(price_search) }} per search</span>
+      <h2>Usage meter (last request)</h2>
+      <span class="muted" style="font-size:13px">Pricing: €{{ "%.3f"|format(price_in) }} / 1K input tokens · €{{ "%.3f"|format(price_out) }} / 1K output tokens</span>
     </div>
     <div class="pm-meter">
-      <div><b id="m-tasks">0</b><span>sub-tasks</span></div>
-      <div><b id="m-searches">0</b><span>searches</span></div>
-      <div><b id="m-tokens">0</b><span>tokens billed</span></div>
-      <div id="m-cost-box"><b id="m-cost">€0.00</b><span>cost of this request</span></div>
-      <div><b>€{{ "%.2f"|format(budget) }}</b><span>budget per request (shown, not enforced)</span></div>
+      <div><b id="m-tasks">0 / 0</b><span>sub-tasks run</span></div>
+      <div><b id="m-calls">0</b><span>model calls</span></div>
+      <div id="m-tokens-box"><b id="m-tokens">0</b><span>tokens used (<span id="m-io">0 in · 0 out</span>)</span></div>
+      <div><b id="m-cost">€0.00</b><span>cost of this request</span></div>
+      <div><b>{{ "{:,}".format(budget) }}</b><span>token budget per request (shown, not enforced)</span></div>
     </div>
-    <p class="muted" style="font-size:13px">One sub-task = {{ searches }} searches + about {{ "{:,}".format(tok_in) }} input and {{ "{:,}".format(tok_out) }} output tokens ≈ €{{ "%.2f"|format(per_task) }}.</p>
+    <p class="muted" style="font-size:13px">Counts come from the usage the model reports for each call, updated as each sub-task finishes. A lab-safety stop ends a request after {{ safety // 60 }} minutes.</p>
   </section>
 
   <div class="pm-layout-trace">
@@ -43,11 +43,12 @@
   const origStream = PM.stream;
   PM.stream = (url, body, onEvent, signal) => origStream(url, body, (ev) => {
     if (ev.type === "meter") {
-      document.getElementById("m-tasks").textContent = ev.tasks;
-      document.getElementById("m-searches").textContent = ev.searches.toLocaleString();
+      document.getElementById("m-tasks").textContent = ev.done + " / " + ev.tasks;
+      document.getElementById("m-calls").textContent = ev.calls;
       document.getElementById("m-tokens").textContent = ev.tokens.toLocaleString();
+      document.getElementById("m-io").textContent = ev.tokens_in.toLocaleString() + " in · " + ev.tokens_out.toLocaleString() + " out";
       document.getElementById("m-cost").textContent = "€" + ev.cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      document.getElementById("m-cost-box").className = ev.cost > ev.budget ? "over" : "";
+      document.getElementById("m-tokens-box").className = ev.tokens > ev.budget ? "over" : "";
     }
     onEvent(ev);
   }, signal);

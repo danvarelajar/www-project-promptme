@@ -91,7 +91,7 @@ Times are the average per attempt in the automated solver (model response time o
 | LLM03 L2 | | Same agent with write, delete and share tools | Unneeded tools plus no human in the loop; a check on one tool isn't enough | 5/5 | 9 s |
 | LLM04 | Supply Chain | Model hub with a verified and a community model package | Unverified packages run code; check hashes and what a package contains | 5/5 | 1 s |
 | LLM05 | Data and Model Poisoning | OWASP assistant fed from an editable company wiki | Whoever can edit the source shapes the answers others get | 5/5 | 2 s |
-| LLM06 | Unbounded Consumption | Research agent with a cost meter and an unenforced budget | Denial of wallet through unbounded fan-out | 5/5 | 31 s |
+| LLM06 | Unbounded Consumption | Research agent with a live usage meter and an unenforced token budget; every sub-task is a real model call | Denial of wallet through unbounded fan-out | 2/2 † | 98 s |
 | LLM07 | Misinformation | Support bot whose refund approvals are paid automatically | Confident, ungrounded output that systems act on | 3–8 of 10 * | 15 s |
 | LLM08 | Hidden Context Exposure | Sales assistant with hidden instructions and an output filter | Hidden prompts leak; exact-match filters are easy to get past | 5/5 | 1 s |
 | LLM08 L2 | | Same assistant with a staff-only tool | Hidden tool schemas and unlock secrets are context too | 5/5 | 11 s |
@@ -99,6 +99,8 @@ Times are the average per attempt in the automated solver (model response time o
 | LLM09 L2 | | Private notes in one shared vector store | Missing tenant / owner filters in retrieval | 5/5 | 1 s |
 | LLM10 | Improper Output Handling | Store assistant that turns questions into SQL | Model output executed without validation | 5/5 | 1 s |
 | LLM10 L2 | | Admin summary of product reviews, rendered as Markdown | Rendered output can carry data out (image URLs) | 5/5 | 10 s |
+
+† LLM06 bills the real token usage the model reports (budget 2,000 tokens per request, flag above 6,000). A normal request uses about 900 tokens in under 20 s; the solver's 32-sub-task request used about 8,650 tokens in about 98 s. A successful attack really occupies the attendee's model for one to two minutes, which is part of the lesson; a 5-minute lab-safety stop ends any single request. Because every call is real, a gateway placed in front of the model (for example in the protection session) sees and can meter all of them.
 
 \* LLM07 is the least predictable: the model sometimes sticks to the policy. Honest refund requests never trigger a payout. Encourage attendees to try a few angles and to start a new conversation if one stalls. Measured 3/5 in one run and 8/10 in a re-run.
 
@@ -140,6 +142,7 @@ Each challenge folder has a `content.yaml` with the risk text and three hints pe
 | Challenge won't start: "port in use" | Another process holds the port; `./promptme.sh stop`, then start again. |
 | Challenge starts then stops | See `logs/<challenge>.log`. |
 | LLM04: collector page doesn't load | Port 5012 isn't reachable from the attendee's network. |
+| LLM06 answer takes one to two minutes | Expected for a large fan-out: every sub-task runs on the model. The meter updates as each one finishes. |
 | Agent challenge answers after about 2 minutes with "time budget reached" | The model is slow on this server; the agent stops calling tools after 120 s so one request can't block the server. |
 | Answers seem to forget earlier text | Context window too small; raise Ollama's context length. |
 
