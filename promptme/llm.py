@@ -126,6 +126,9 @@ def chat_stream(messages, model=None, max_tokens=DEFAULT_MAX_TOKENS, temperature
                 timeout=DEFAULT_TIMEOUT, **extra):
     """Yield the answer in pieces as the model produces them."""
     resp = _post("/chat/completions", _payload(messages, model, max_tokens, temperature, True, extra), timeout, stream=True)
+    # Event streams often come without a charset, and requests then falls
+    # back to Latin-1, garbling accented text (é -> Ã©). They are UTF-8.
+    resp.encoding = "utf-8"
     with resp:
         for line in resp.iter_lines(decode_unicode=True):
             if not line or not line.startswith("data:"):

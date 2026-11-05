@@ -41,6 +41,7 @@ def stream(url, payload, session=None, timeout=TIMEOUT):
     s = session or requests
     text, flag, events = [], None, []
     with s.post(url, json=payload, stream=True, timeout=timeout) as r:
+        r.encoding = "utf-8"
         for line in r.iter_lines(decode_unicode=True):
             if not line or not line.startswith("data:"):
                 continue
