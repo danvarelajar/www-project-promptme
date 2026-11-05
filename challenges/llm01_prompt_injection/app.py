@@ -83,7 +83,7 @@ def fetch_page(url):
     m = re.match(r"https?://[^/]+(/news/\d+)", url)
     target = f"http://127.0.0.1:{runner.port(5001)}{m.group(1)}" if m else url
     resp = requests.get(target, timeout=8)
-    soup = BeautifulSoup(resp.text, "html.parser")
+    soup = BeautifulSoup(resp.content, "html.parser")  # bytes: let bs4 read the charset
     for tag in soup(["script", "style", "header", "footer", "nav"]):
         tag.decompose()
     text = re.sub(r"\n{3,}", "\n\n", soup.get_text("\n")).strip()
