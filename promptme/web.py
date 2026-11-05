@@ -20,6 +20,8 @@ and stream answers with web.sse(events), where events yields dicts:
 import json
 import os
 
+import yaml
+
 from flask import Blueprint, Response, request, stream_with_context
 
 from . import config, llm
@@ -47,16 +49,33 @@ def attach(app, challenge_id=None, show_trace=True):
     app.register_blueprint(bp)
 
     ch = config.challenge(challenge_id) if challenge_id else None
+    content = load_content(ch)
 
     @app.context_processor
     def _pm_context():
+        level = 2 if request.path.startswith("/l2") else 1
         return {
             "pm_challenge": ch,
             "pm_show_trace": show_trace,
             "pm_dashboard_url": dashboard_url(),
+            "pm_content": content,
+            "pm_level": level,
+            "pm_hints": (content.get(f"level{level}") or {}).get("hints", []),
         }
 
     return app
+
+
+def load_content(ch):
+    """The challenge's content.yaml (risk background and hints), or {}."""
+    if not ch:
+        return {}
+    path = os.path.join(config.ROOT, os.path.dirname(ch["entry"]), "content.yaml")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return yaml.safe_load(f) or {}
+    except OSError:
+        return {}
 
 
 def sse(events):

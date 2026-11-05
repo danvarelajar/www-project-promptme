@@ -1,0 +1,16 @@
+# Text shown in the challenge's Hints drawer. Plain text; keep each hint short.
+risk: |
+  Prompt injection (LLM01:2026) happens when text the model reads changes what it does. The text can come from the user (direct injection) or from content the application feeds the model: web pages, documents, emails, tool output (indirect injection). The 2026 list also covers instructions hidden in other inputs and in content that connected tools return.
+  Impact: the model can leak data from its context, take actions the user never asked for, or mislead the people relying on it.
+
+level1:
+  hints:
+    - The security filter only looks at what you type into the chat. Is everything the assistant reads typed into the chat?
+    - When the assistant summarises a page, the page text and the assistant's shared memory end up in the same prompt. Instructions written inside a page are read like any other text.
+    - Publish a news post that tells the assistant what to include in its summary, then ask it to summarise that post's URL.
+
+level2:
+  hints:
+    - The assistant decides which registry tool to use from each tool's description. Anyone can register a tool.
+    - If your tool looks like the best match for an everyday question, the assistant will call it, and it treats whatever your tool returns as trusted data.
+    - Register a tool that presents itself as the authoritative source for the colleague's question and returns a useful answer plus instructions for the assistant. Then run the colleague's question. Note: larger models will often follow instructions placed in a tool's description alone; this small model only uses descriptions to choose tools.

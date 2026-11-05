@@ -18,6 +18,7 @@
       <span class="pm-spacer"></span>
       {% block topbar %}
         {% if pm_challenge %}<span class="pm-pill plain mono">{{ pm_challenge.code }}</span>{% endif %}
+        {% if pm_content %}<button class="pm-btn sm" type="button" id="pm-hints-open">Hints</button>{% endif %}
         <a class="pm-btn ghost sm" href="{{ pm_dashboard_url }}">Dashboard</a>
       {% endblock %}
       <button class="pm-btn ghost sm" type="button" onclick="PM.theme.toggle()" aria-label="Switch light or dark theme">Theme</button>
@@ -44,6 +45,43 @@
       <span class="mono">8.0.2</span>
     </div>
   </footer>
+  {% if pm_content %}
+  <div class="pm-drawer-backdrop" id="pm-hints-backdrop" hidden></div>
+  <aside class="pm-drawer" id="pm-hints" hidden role="dialog" aria-labelledby="pm-hints-title">
+    <header><h2 id="pm-hints-title">Level {{ pm_level }} hints</h2>
+      <button class="pm-btn ghost sm" type="button" id="pm-hints-close">Close</button></header>
+    <div class="body">
+      {% if pm_content.risk %}<section class="pm-stack" style="gap:6px"><span class="pm-label">About this risk</span>
+        <p style="white-space:pre-line;font-size:14px">{{ pm_content.risk }}</p></section>{% endif %}
+      <section class="pm-stack" style="gap:10px">
+        <span class="pm-label">Hints, one at a time</span>
+        {% for h in pm_hints %}
+        <div class="pm-hint" data-n="{{ loop.index }}" {% if not loop.first %}hidden{% endif %}>
+          <button class="pm-btn sm" type="button" data-reveal="{{ loop.index }}">Show hint {{ loop.index }}: {{ ["nudge", "technique", "almost there"][loop.index0] if loop.index0 < 3 else "" }}</button>
+          <p class="pm-hint-text" hidden style="white-space:pre-line;font-size:14px">{{ h }}</p>
+        </div>
+        {% else %}<p class="muted">No hints for this level yet.</p>{% endfor %}
+      </section>
+    </div>
+  </aside>
+  <script>
+    (() => {
+      const d = document.getElementById("pm-hints"), b = document.getElementById("pm-hints-backdrop");
+      const toggle = (open) => { d.hidden = !open; b.hidden = !open; };
+      document.getElementById("pm-hints-open").addEventListener("click", () => toggle(true));
+      document.getElementById("pm-hints-close").addEventListener("click", () => toggle(false));
+      b.addEventListener("click", () => toggle(false));
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !d.hidden) toggle(false); });
+      d.querySelectorAll("[data-reveal]").forEach((btn) => btn.addEventListener("click", () => {
+        const n = +btn.dataset.reveal;
+        btn.hidden = true;
+        btn.nextElementSibling.hidden = false;
+        const next = d.querySelector(`.pm-hint[data-n="${n + 1}"]`);
+        if (next) next.hidden = false;
+      }));
+    })();
+  </script>
+  {% endif %}
   {% block scripts %}{% endblock %}
 </body>
 </html>
