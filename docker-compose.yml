@@ -1,0 +1,29 @@
+# Run PromptMe locally against an Ollama that is already running.
+#
+#   docker-compose up -d --build
+#   open http://localhost:5100        (dashboard; 5000 is taken by AirPlay on macOS)
+#
+# OLLAMA_HOST: host.docker.internal reaches Ollama published on the
+# Docker host (an Ollama container with -p 11434:11434, or Ollama on the
+# machine itself). Change it for a remote Ollama or a gateway.
+services:
+  promptme:
+    build: .
+    image: promptme:8.0.2
+    container_name: promptme
+    ports:
+      - "5100:5000"              # dashboard
+      - "5001-5010:5001-5010"    # challenges
+      - "5012:5012"              # LLM04 collector
+    environment:
+      OLLAMA_HOST: http://host.docker.internal:11434
+      PORT: "5000"
+      PROMPTME_DASHBOARD_PORT: "5100"   # where challenge pages link back to
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - promptme-data:/app/data          # progress (flags submitted)
+    restart: unless-stopped
+
+volumes:
+  promptme-data:

@@ -1,0 +1,11 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.DS_Store
+data
+logs
+run
+*.db
+config/ollama_config.json

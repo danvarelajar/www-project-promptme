@@ -15,7 +15,7 @@ Measured on a 4 vCPU / 8 GB VM (Apple silicon, Colima). x86 cloud servers are us
 
 | Item | Need |
 |---|---|
-| CPU / RAM | 4 vCPU, 8 GB RAM recommended. The chat model uses about 3.5 GB when loaded, the embedding model about 0.3 GB. |
+| CPU / RAM | 4 vCPU, 8 GB RAM minimum. Measured: Ollama holds about 5.3 GB with both models loaded; PromptMe itself uses well under 100 MB. Prefer more RAM if the operating system or anything else needs room. |
 | Disk | About 3 GB for the two models, plus about 200 MB for PromptMe and its Python packages. |
 | Software | Linux, Python 3.10+, Ollama. No GPU, no internet needed during the workshop. |
 | Open ports | **5000** (dashboard), **5001–5010** (challenges), **5012** (LLM04's collector, which attendees browse to). |
@@ -43,6 +43,9 @@ git checkout 8.0.2
 ./promptme.sh start
 ```
 `check` reports whether the model endpoint is reachable, whether each model is present (with the `ollama pull` command if not) and runs a short chat test. If Ollama runs elsewhere, set the endpoint in the dashboard's **Settings** (an optional API key is supported for a gateway).
+
+### Or run PromptMe in a container
+`docker-compose up -d --build` builds an image with the dashboard and all challenges (no model inside) and starts it. It expects Ollama on the Docker host's port 11434 (`OLLAMA_HOST` in `docker-compose.yml`). The dashboard is published on port **5100** (5000 clashes with AirPlay on macOS; change the mapping on Linux if you prefer 5000), challenges on 5001–5010, the LLM04 collector on 5012. Progress is kept in a Docker volume; `docker-compose down -v` resets it. Logs: `docker logs promptme` for the dashboard, `docker exec promptme cat logs/<challenge>.log` for a challenge. Solver against the container: `.venv/bin/python tools/solve.py --dashboard http://localhost:5100`.
 
 ### Pre-event checklist
 - [ ] One attendee-sized server: `./promptme.sh check` passes, chat test under 2 s once warm.

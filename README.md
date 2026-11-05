@@ -55,6 +55,16 @@ Open `http://<your-server>:5000`, set the model endpoint under **Settings** if O
 
 Other commands: `./promptme.sh status`, `./promptme.sh stop`, `./promptme.sh restart`. Logs are in `logs/`. On macOS, port 5000 is taken by AirPlay Receiver: run `PROMPTME_PORT=5100 ./promptme.sh start`.
 
+### Or run it in a container
+
+With Docker (or Colima) and Ollama already running and published on port 11434:
+
+```
+docker-compose up -d --build
+```
+
+The dashboard is on `http://localhost:5100` (5100 rather than 5000, which macOS AirPlay uses); challenges keep ports 5001–5010, and LLM04 also uses 5012. Edit `OLLAMA_HOST` in `docker-compose.yml` for a remote Ollama or a gateway. To measure solve rates against the container: `.venv/bin/python tools/solve.py --dashboard http://localhost:5100`.
+
 ### Running the workshop
 
 See the [facilitator guide](docs/facilitator-guide.md): server size, Ollama settings, a pre-event checklist, the 4-hour agenda, what each challenge teaches and troubleshooting.

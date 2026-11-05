@@ -3,6 +3,7 @@
     python tools/solve.py                    # every challenge, 3 runs each
     python tools/solve.py llm01 llm08 -n 10  # chosen challenges, 10 runs
     python tools/solve.py --skip llm06       # LLM06 takes minutes per run
+    python tools/solve.py --dashboard http://localhost:5100   # challenges in a container
 
 Starts challenges that aren't running (and stops them afterwards), prints a
 table and writes data/solve_report.json. Run it on an attendee-sized server:
@@ -15,6 +16,8 @@ import os
 import sys
 import time
 from datetime import datetime, timezone
+
+import requests
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -50,6 +53,29 @@ def run_solver(ch, suffix, solver, args, report):
                               "rate": rate, "avg_seconds": round(avg, 1), "last_detail": last})
 
 
+def ensure_running(ch, dashboard):
+    """Start the challenge if needed; True if this run started it."""
+    if dashboard:
+        state = requests.get(dashboard.rstrip("/") + "/api/state", timeout=10).json()
+        if next(c for c in state["challenges"] if c["id"] == ch["id"])["running"]:
+            return False
+        r = requests.post(f"{dashboard.rstrip('/')}/api/challenges/{ch['id']}/start", timeout=120).json()
+        if not r.get("ok"):
+            raise RuntimeError(r.get("error", "dashboard refused to start it"))
+        return True
+    if launcher.status(ch)["running"]:
+        return False
+    launcher.start(ch)
+    return True
+
+
+def stop(ch, dashboard):
+    if dashboard:
+        requests.post(f"{dashboard.rstrip('/')}/api/challenges/{ch['id']}/stop", timeout=30)
+    else:
+        launcher.stop(ch)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("ids", nargs="*", help="challenge ids (default: all)")
@@ -57,6 +83,8 @@ def main():
     ap.add_argument("--skip", nargs="*", default=[])
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--level", choices=["1", "2", "both"], default="both", help="which levels to run")
+    ap.add_argument("--dashboard", help="start/stop challenges through this dashboard's API (e.g. a container) "
+                                        "instead of as local processes")
     args = ap.parse_args()
 
     chosen = [c for c in config.challenges() if (not args.ids or c["id"] in args.ids) and c["id"] not in args.skip]
@@ -65,14 +93,11 @@ def main():
 
     report = {"at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "models": settings["models"], "results": []}
     for ch in chosen:
-        started_here = False
-        if not launcher.status(ch)["running"]:
-            try:
-                launcher.start(ch)
-                started_here = True
-            except launcher.LaunchError as e:
-                print(f"{ch['code']:12} could not start: {e}")
-                continue
+        try:
+            started_here = ensure_running(ch, args.dashboard)
+        except (launcher.LaunchError, RuntimeError) as e:
+            print(f"{ch['code']:12} could not start: {e}")
+            continue
         jobs = []
         if args.level in ("1", "both"):
             jobs.append(("", SOLVERS[ch["id"]]))
@@ -81,7 +106,7 @@ def main():
         for suffix, solver in jobs:
             run_solver(ch, suffix, solver, args, report)
         if started_here:
-            launcher.stop(ch)
+            stop(ch, args.dashboard)
     os.makedirs(config.DATA_DIR, exist_ok=True)
     path = os.path.join(config.DATA_DIR, "solve_report.json")
     with open(path, "w") as f:
