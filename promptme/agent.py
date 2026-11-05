@@ -15,6 +15,7 @@ point of the agent challenges.
 
 import json
 import re
+import time
 
 from . import llm
 
@@ -66,13 +67,23 @@ def _fmt_args(args):
     return ", ".join(f"{k}={v!r}" for k, v in args.items())
 
 
-def run(messages, tools, max_steps=5, max_tokens=400, temperature=0.2, result_limit=4000):
-    """Run the loop, yielding events. `messages` is extended in place."""
+def run(messages, tools, max_steps=5, max_tokens=400, temperature=0.2, result_limit=4000, time_budget=120):
+    """Run the loop, yielding events. `messages` is extended in place.
+
+    time_budget (seconds) bounds the whole run: on a CPU-only server one
+    agent request must not occupy the model for minutes. When it runs out,
+    the agent answers with what it has.
+    """
     by_name = {t.name: t for t in tools}
     schemas = [t.schema() for t in tools]
+    deadline = time.time() + time_budget
 
     for step in range(max_steps):
-        out = llm.chat_full(messages, tools=schemas, max_tokens=max_tokens, temperature=temperature)
+        if time.time() > deadline:
+            yield {"type": "trace", "title": "Time budget reached", "body": f"Stopped calling tools after {time_budget}s."}
+            break
+        out = llm.chat_full(messages, tools=schemas, max_tokens=max_tokens, temperature=temperature,
+                            timeout=max(10, deadline - time.time() + 30))
         msg = out["message"]
         calls = msg.get("tool_calls") or []
 
