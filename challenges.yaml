@@ -115,6 +115,10 @@ challenges:
     models: [chat]
     flag_sha256: 9be50ca8363b75c12f2cc425bd0bfa6821e4c311696859c0825ab15d1c1fea53
     summary: Kestrelline's sales assistant hides a partner discount code, and a filter guards it. Get it out anyway.
+    level2:
+      title: Hidden tool exfiltration
+      flag_sha256: e35c7a8f342275ecc21f16c4053cad951cb09f46f17ae2024a2466f903181bd4
+      summary: The sales assistant hides a staff-only tool. Find it and get it applied to your quote.
 
   - id: llm09
     code: "LLM09:2026"

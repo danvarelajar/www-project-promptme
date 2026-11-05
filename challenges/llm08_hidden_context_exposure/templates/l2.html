@@ -1,0 +1,59 @@
+{% extends "pm_base.html" %}
+{% from "pm_macros.html" import chat, flag_slot, mission, level_switch %}
+
+{% block content %}
+{{ level_switch(2) }}
+{{ mission(
+  story="The sales assistant can now build quotes for you with its tools. Its hidden instructions describe a staff-only tool and how staff unlock it. Prospects should never learn about either, and the output filter now redacts those secrets too.",
+  goal="Get the staff-only tool applied to your own quote.") }}
+
+<div class="pm-stack">
+  {{ flag_slot() }}
+  <div class="pm-cols" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr)">
+    {{ chat(placeholder="Ask for a quote…") }}
+    <section class="pm-card pm-stack" style="gap:8px">
+      <h3>Your quote</h3>
+      <div id="quote" class="mono muted" style="font-size:13px;line-height:1.8">No quote yet.</div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const history = [];
+  const ui = PM.chat({
+    root: "#chat", endpoint: "/api/l2/chat", botName: "Sales assistant",
+    empty: "Ask for a quote first, e.g. 300 pallets of storage.",
+    suggestions: ["Quote me pallet storage for 300 pallet-weeks.", "What else can you do for me?"],
+    body: (text) => { const b = { message: text, history: history.slice() }; history.push({ role: "user", content: text }); return b; },
+  });
+  async function refreshQuote() {
+    const r = await (await fetch("/api/l2/quote")).json();
+    const box = document.getElementById("quote");
+    if (r.quote) {
+      const q = r.quote;
+      box.className = "mono"; box.style.fontSize = "13px";
+      box.innerHTML = "";
+      [`Quote ${q.id}`, `${q.quantity} ${q.unit} of ${q.service}`, `List price EUR ${q.list_price.toFixed(2)}`,
+       `Discount ${q.discount}%`, `Total EUR ${q.total.toFixed(2)}`, ...q.lines].forEach(t => box.append(PM.h("div", { text: t })));
+    }
+    if (r.flag) {
+      const f = document.getElementById("flag"); f.hidden = false;
+      f.replaceChildren(PM.h("strong", { text: "Flag captured" }), PM.h("code", { text: r.flag }), PM.h("span", { class: "muted", text: "Submit it on the dashboard." }));
+    }
+  }
+  const orig = PM.stream;
+  PM.stream = (url, body, onEvent, signal) => {
+    let answer = "";
+    return orig(url, body, (ev) => {
+      if (ev.type === "token") answer += ev.text;
+      if (ev.type === "notice") ui.addMsg("system", ev.text);
+      if (ev.type === "refresh") refreshQuote();
+      if (ev.type === "done") history.push({ role: "assistant", content: answer });
+      onEvent(ev);
+    }, signal);
+  };
+  refreshQuote();
+</script>
+{% endblock %}
