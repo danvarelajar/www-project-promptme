@@ -18,7 +18,7 @@
       <span class="pm-spacer"></span>
       {% block topbar %}
         {% if pm_challenge %}<span class="pm-pill plain mono">{{ pm_challenge.code }}</span>{% endif %}
-        {% if pm_content %}<button class="pm-btn sm" type="button" id="pm-hints-open">Hints</button>{% endif %}
+        {% if pm_content.risk or pm_hints %}<button class="pm-btn sm" type="button" id="pm-hints-open">Hints</button>{% endif %}
         <a class="pm-btn ghost sm" href="{{ pm_dashboard_url }}">Dashboard</a>
       {% endblock %}
       <button class="pm-btn ghost sm" type="button" onclick="PM.theme.toggle()" aria-label="Switch light or dark theme">Theme</button>
@@ -45,7 +45,7 @@
       <span class="mono">8.0.2</span>
     </div>
   </footer>
-  {% if pm_content %}
+  {% if pm_content.risk or pm_hints %}
   <div class="pm-drawer-backdrop" id="pm-hints-backdrop" hidden></div>
   <aside class="pm-drawer" id="pm-hints" hidden role="dialog" aria-labelledby="pm-hints-title">
     <header><h2 id="pm-hints-title">Level {{ pm_level }} hints</h2>

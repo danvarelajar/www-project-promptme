@@ -1,0 +1,16 @@
+# Hints drawer content for LLM05:2026 Data and Model Poisoning.
+# Fill in the text below; the Hints button appears on the challenge page
+# once the risk text or a hint is filled in. See challenges/llm01_prompt_injection/content.yaml
+# for a finished example. Plain text; keep each hint to one or two sentences.
+
+# "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
+# (one sentence). Shown at the top of the drawer on both levels.
+risk: ""
+
+level1:
+  # Three hints, revealed one at a time:
+  #   1. nudge: where to look, without naming the technique
+  #   2. technique: the weakness in this app and why it exists
+  #   3. almost there: what to try, short of the exact input
+  # The working attack for this level is in tools/solvers.py (solve_llm05).
+  hints: []
