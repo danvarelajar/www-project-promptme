@@ -55,11 +55,11 @@
 .pm-trace-log::before { content: ""; position: absolute; left: 14px; top: 14px; bottom: 14px; width: 2px; background: var(--line); border-radius: 2px; }
 .pm-trace-log:has(.pm-trace-empty)::before { display: none; }
 .pm-trace-log:has(.pm-trace-empty) { padding-left: 12px; }
-.pm-trace-item { position: relative; }
-.pm-trace-item::before { content: ""; position: absolute; left: -16px; top: 12px; width: 10px; height: 10px; border-radius: 50%;
+.pm-trace-log .pm-trace-item { position: relative; }
+.pm-trace-log .pm-trace-item::before { content: ""; position: absolute; left: -16px; top: 12px; width: 10px; height: 10px; border-radius: 50%;
   background: var(--surface); border: 2px solid var(--accent); }
-.pm-trace-item[open] { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
-.pm-trace-item[open]::before { background: var(--accent); }
+.pm-trace-log .pm-trace-item[open] { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.pm-trace-log .pm-trace-item[open]::before { background: var(--accent); }
 
 @media (max-width: 900px) {
   .pm-layout-trace .pm-trace { position: static; max-height: 420px; }
