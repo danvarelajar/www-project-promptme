@@ -103,7 +103,7 @@
 
     function addMsg(role, text) {
       clearEmpty();
-      const who = role === "user" ? "You" : role === "assistant" ? (opts.botName || "Assistant") : role === "error" ? "Error" : "System";
+      const who = role === "user" ? "You" : role === "assistant" ? (opts.botName || document.body.dataset.app || "Assistant") : role === "error" ? "Error" : "System";
       const body = h("div", { class: "body", text: text || "" });
       const msg = h("div", { class: `pm-msg ${role}` }, h("span", { class: "who", text: who }), body);
       log.append(msg);
@@ -160,6 +160,15 @@
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(input.value); }
     });
+    // Inside a Mica app: show its app bar and name the bot after it.
+    const appName = document.body.dataset.app;
+    if (appName && !root.querySelector(".pm-app-bar")) {
+      root.classList.add("pm-in-app");
+      root.prepend(h("header", { class: "pm-app-bar" },
+        h("span", { class: "pm-app-mark", "aria-hidden": "true", text: "M" }),
+        h("b", { text: appName }),
+        h("span", { class: "pm-app-env", text: "internal" })));
+    }
     if (opts.suggestions && opts.suggestions.length) {
       const box = h("div", { class: "pm-suggestions" },
         opts.suggestions.map((s) => h("button", { type: "button", text: s, onclick: () => submit(s) })));

@@ -9,14 +9,14 @@
 <div class="pm-stack">
   {{ flag_slot() }}
   <div class="pm-cols">
-    <section class="pm-card pm-stack" style="gap:8px">
+    <section class="pm-app pm-card pm-stack" style="gap:8px">
       <h3>Your order</h3>
       <div class="mono" style="font-size:13px;line-height:1.8">
         {{ customer.name }}<br>Order {{ customer.order }} · goods value EUR {{ customer.value }}<br>
         Delivered {{ customer.delivered_days_ago }} days ago<br>{{ customer.status }}
       </div>
     </section>
-    <section class="pm-card pm-stack" style="gap:8px">
+    <section class="pm-app pm-card pm-stack" style="gap:8px">
       <h3>Published refund policy</h3>
       <pre class="muted" style="font-size:13px">{{ policy }}</pre>
     </section>

@@ -17,3 +17,27 @@ WAREHOUSES = ["Rotterdam", "Antwerp", "Hamburg", "Lyon", "Gdansk"]
 
 def email(user):
     return f"{user}@{DOMAIN}"
+
+
+# The Mica product each challenge page plays: (level 1, level 2).
+APPS = {
+    "llm01": ("Intranet", "Ops Assistant"),
+    "llm02": ("HR Assistant", None),
+    "llm03": ("Drive", "Drive"),
+    "llm04": ("Model Hub", None),
+    "llm05": ("Security Q&A", None),
+    "llm06": ("Research Desk", None),
+    "llm07": ("Customer Support", None),
+    "llm08": ("Sales", "Sales Quotes"),
+    "llm09": ("Knowledge Base", "My Notes"),
+    "llm10": ("Company Store", "Store Admin"),
+}
+
+
+def app_name(challenge_id, level=1):
+    """'Mica Intranet' etc., or None when the page has no app identity."""
+    names = APPS.get(challenge_id)
+    if not names:
+        return None
+    name = names[1] if level == 2 and names[1] else names[0]
+    return f"{SHORT} {name}"

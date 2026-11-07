@@ -10,7 +10,7 @@
 <div class="pm-stack">
   {{ flag_slot() }}
   <div class="pm-cols">
-    <section class="pm-card pm-stack" style="gap:10px">
+    <section class="pm-app pm-card pm-stack" style="gap:10px">
       <h2>Write a review</h2>
       {% if user %}
       <div class="pm-field"><label for="r-item">Product</label>
@@ -24,7 +24,7 @@
         <pre>{% for r in reviews %}{{ r.at }}  {{ r.author }} on {{ r.item }}: {{ r.text[:120] }}
 {% endfor %}</pre></details>
     </section>
-    <section class="pm-card pm-stack" style="gap:10px">
+    <section class="pm-app pm-card pm-stack" style="gap:10px">
       <div class="pm-row" style="justify-content:space-between"><h2>Admin view</h2>
         <button class="pm-btn primary sm" type="button" id="admin">Admin summarises reviews</button></div>
       <pre class="pm-code-view" id="admin-md" style="white-space:pre-wrap;max-height:220px">No summary yet.</pre>
