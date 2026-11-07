@@ -137,19 +137,19 @@
       h("div", null, h("h3", { text: c.title }), c.was ? h("div", { class: "pm-ch-was", text: "was " + c.was }) : null),
       h("p", { class: "sum", text: c.summary }),
       c.missing_models.length ? h("div", { class: "pm-note warn", style: "font-size:13px" }, "Needs ", c.missing_models.map((m, i) => [i ? ", " : "", h("code", { text: m })])) : null,
-      h("div", { class: "pm-ch-actions" },
-        c.running
-          ? [h("a", { class: "pm-btn primary sm", href: challengeUrl(c), target: "_blank", rel: "noopener", text: "Open" }),
-             h("button", { class: "pm-btn sm", type: "button", disabled: isBusy, onclick: () => stop(c), text: isBusy ? "Stopping…" : "Stop" })]
-          : h("button", { class: "pm-btn primary sm", type: "button", disabled: isBusy, onclick: () => start(c), text: isBusy ? "Starting…" : "Start" }),
-        h("span", { class: "muted mono", style: "font-size:12px;margin-left:auto", text: ":" + c.port })),
       c.level2 ? h("div", { class: "pm-row", style: "font-size:13px;gap:8px" },
         h("span", { class: "pm-pill " + (c.level2.solved_at ? "ok" : "info"), text: c.level2.solved_at ? "Level 2 solved" : "Level 2 (optional)" }),
         h("span", { class: "muted", text: c.level2.title })) : null,
       c.has_flag && !allSolved ? h("div", { class: "pm-ch-flag" }, flagInput,
         h("button", { class: "pm-btn sm", type: "button", onclick: () => submitFlag(c), text: "Submit" })) : null,
       !c.has_flag ? h("span", { class: "muted", style: "font-size:13px", text: "Observation challenge — no flag yet." }) : null,
-      msg ? h("div", { class: "pm-ch-msg " + msg.kind, text: msg.text }) : null);
+      msg ? h("div", { class: "pm-ch-msg " + msg.kind, text: msg.text }) : null,
+      // Buttons last, so they line up across cards in the same row.
+      h("div", { class: "pm-ch-actions" },
+        c.running
+          ? [h("a", { class: "pm-btn primary sm", href: challengeUrl(c), target: "_blank", rel: "noopener", text: "Open" }),
+             h("button", { class: "pm-btn sm", type: "button", disabled: isBusy, onclick: () => stop(c), text: isBusy ? "Stopping…" : "Stop" })]
+          : h("button", { class: "pm-btn primary sm", type: "button", disabled: isBusy, onclick: () => start(c), text: isBusy ? "Starting…" : "Start" })));
   }
 
   function forceRender() { render.force = true; try { render(); } finally { render.force = false; } }

@@ -189,7 +189,7 @@ pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
 .pm-ch-code span { color: var(--muted); font-size: 13px; font-weight: 500; }
 .pm-ch-was { font: 12px var(--font-mono); color: var(--muted); }
 .pm-ch p.sum { color: var(--muted); font-size: 14px; flex: 1; }
-.pm-ch-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.pm-ch-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: auto; padding-top: 4px; }
 .pm-ch-flag { display: flex; gap: 8px; }
 .pm-ch-flag .pm-input { flex: 1; }
 .pm-ch-msg { font-size: 13px; }
