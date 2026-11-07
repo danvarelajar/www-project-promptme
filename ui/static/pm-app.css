@@ -64,3 +64,16 @@
 @media (max-width: 900px) {
   .pm-layout-trace .pm-trace { position: static; max-height: 420px; }
 }
+
+/* ---------- 3. Dashboard ---------- */
+/* Two per row, or five per row on wide screens (the two agenda blocks):
+   10 challenges never leave one card alone on the last row. */
+body:has(.pm-grid) .pm-wrap { max-width: 1480px; }
+.pm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 1400px) { .pm-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .pm-grid { grid-template-columns: 1fr; } }
+.pm-ch { padding: 18px; gap: 10px; }
+.pm-ch h3 { font-size: 17px; }
+.pm-ch-was { opacity: 0.75; font-size: 11.5px; }
+.pm-ch-live { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--accent); }
+.pm-ch-live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: pm-pulse 1.6s ease-in-out infinite; }
