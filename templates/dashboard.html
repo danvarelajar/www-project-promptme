@@ -149,7 +149,8 @@
         c.running
           ? [h("a", { class: "pm-btn primary sm", href: challengeUrl(c), target: "_blank", rel: "noopener", text: "Open" }),
              h("button", { class: "pm-btn sm", type: "button", disabled: isBusy, onclick: () => stop(c), text: isBusy ? "Stopping…" : "Stop" })]
-          : h("button", { class: "pm-btn primary sm", type: "button", disabled: isBusy, onclick: () => start(c), text: isBusy ? "Starting…" : "Start" })));
+          : h("button", { class: "pm-btn sm", type: "button", disabled: isBusy, onclick: () => start(c), text: isBusy ? "Starting…" : "Start" }),
+        c.running ? h("span", { class: "pm-ch-live", text: "Running" }) : null));
   }
 
   function forceRender() { render.force = true; try { render(); } finally { render.force = false; } }

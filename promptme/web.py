@@ -24,7 +24,7 @@ import yaml
 
 from flask import Blueprint, Response, request, stream_with_context
 
-from . import config, llm
+from . import company, config, llm
 
 UI_DIR = os.path.join(config.ROOT, "ui")
 
@@ -61,6 +61,7 @@ def attach(app, challenge_id=None, show_trace=True):
             "pm_content": content,
             "pm_level": level,
             "pm_hints": (content.get(f"level{level}") or {}).get("hints", []),
+            "pm_app": company.app_name(challenge_id, level) if challenge_id else None,
         }
 
     return app

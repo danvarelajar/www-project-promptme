@@ -1,0 +1,79 @@
+/* PromptMe UI refresh, kept apart from pm.css so it can be reverted alone:
+   remove this file and its <link> in pm_base.html to go back.
+
+   Mica identity: the application under attack is teal ("Mica"); the lab
+   around it (mission, Under the hood, flags, hints) keeps PromptMe amber. */
+
+:root {
+  --mica: #2ec4b0;
+  --mica-ink: #04201c;
+  --mica-weak: rgba(46, 196, 176, 0.13);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { --mica: #0b7f72; --mica-ink: #ffffff; --mica-weak: rgba(11, 127, 114, 0.1); }
+}
+:root[data-theme="light"] { --mica: #0b7f72; --mica-ink: #ffffff; --mica-weak: rgba(11, 127, 114, 0.1); }
+
+/* ---------- 1. Mica app identity ---------- */
+.pm-app-mark { width: 20px; height: 20px; border-radius: 6px; background: var(--mica); color: var(--mica-ink);
+  display: inline-grid; place-items: center; font: 800 12px/1 var(--font-sans); flex: none; }
+.pm-app-badge { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted);
+  padding: 4px 12px 4px 5px; border-radius: 999px; background: var(--mica-weak); border: 1px solid color-mix(in srgb, var(--mica) 35%, transparent); }
+.pm-app-badge b { color: var(--fg); font-weight: 650; }
+
+.pm-chat.pm-in-app { border-color: color-mix(in srgb, var(--mica) 40%, var(--line)); overflow: hidden; }
+.pm-app-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line);
+  background: linear-gradient(90deg, var(--mica-weak), transparent 70%); font-size: 14px; }
+.pm-app-bar .pm-app-env { margin-left: auto; font: 600 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.pm-in-app .pm-btn.primary { background: var(--mica); border-color: var(--mica); color: var(--mica-ink); }
+.pm-in-app .pm-msg.user .body { background: var(--mica-weak); border-color: color-mix(in srgb, var(--mica) 35%, transparent); }
+.pm-in-app .pm-msg .body.streaming::after { color: var(--mica); }
+.pm-in-app .pm-suggestions button:hover { border-color: var(--mica); }
+.pm-in-app .pm-textarea:focus { border-color: var(--mica); box-shadow: 0 0 0 3px var(--mica-weak); }
+
+/* Panels that belong to the app (news board, model hub, wiki, store...) */
+.pm-app.pm-card, .pm-app.pm-table-wrap { border-top: 3px solid var(--mica); }
+.pm-app:not(.pm-card):not(.pm-table-wrap) { border-left: 3px solid var(--mica); padding-left: 14px; }
+.pm-app .pm-btn.primary { background: var(--mica); border-color: var(--mica); color: var(--mica-ink); }
+
+/* ---------- 2. Challenge page layout ---------- */
+/* Mission: full width, the goal set apart from the story. */
+.pm-mission { max-width: none; }
+.pm-mission p + p { margin-top: 4px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.pm-mission strong { color: var(--accent); }
+
+/* Chat: compact until there is a conversation. */
+.pm-chat:has(.pm-chat-empty) { min-height: 300px; }
+.pm-chat-empty { padding: 24px 0; }
+.pm-msg:not(.user) .body { border: 1px solid var(--line); border-top-left-radius: 4px; }
+.pm-msg.user .body { border-top-right-radius: 4px; }
+
+/* Under the hood: stays in view while you scroll, uses the height it has,
+   and reads as a numbered timeline of what the app did. */
+.pm-layout-trace .pm-trace { position: sticky; top: 74px; max-height: calc(100vh - 96px); }
+.pm-trace-log { position: relative; padding: 12px 12px 12px 26px; }
+.pm-trace-log::before { content: ""; position: absolute; left: 14px; top: 14px; bottom: 14px; width: 2px; background: var(--line); border-radius: 2px; }
+.pm-trace-log:has(.pm-trace-empty)::before { display: none; }
+.pm-trace-log:has(.pm-trace-empty) { padding-left: 12px; }
+.pm-trace-log .pm-trace-item { position: relative; }
+.pm-trace-log .pm-trace-item::before { content: ""; position: absolute; left: -16px; top: 12px; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--accent); }
+.pm-trace-log .pm-trace-item[open] { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.pm-trace-log .pm-trace-item[open]::before { background: var(--accent); }
+
+@media (max-width: 900px) {
+  .pm-layout-trace .pm-trace { position: static; max-height: 420px; }
+}
+
+/* ---------- 3. Dashboard ---------- */
+/* Two per row, or five per row on wide screens (the two agenda blocks):
+   10 challenges never leave one card alone on the last row. */
+body:has(.pm-grid) .pm-wrap { max-width: 1480px; }
+.pm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 1400px) { .pm-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .pm-grid { grid-template-columns: 1fr; } }
+.pm-ch { padding: 18px; gap: 10px; }
+.pm-ch h3 { font-size: 17px; }
+.pm-ch-was { opacity: 0.75; font-size: 11.5px; }
+.pm-ch-live { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--accent); }
+.pm-ch-live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: pm-pulse 1.6s ease-in-out infinite; }

@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{% if pm_challenge %}{{ pm_challenge.code }} {{ pm_challenge.title }} · {% endif %}PromptMe{% endblock %}</title>
   <link rel="stylesheet" href="/_pm/pm.css">
+  <link rel="stylesheet" href="/_pm/pm-app.css">
   <script src="/_pm/pm.js"></script>
   {% block head %}{% endblock %}
 </head>
-<body>
+<body{% if pm_app %} data-app="{{ pm_app }}"{% endif %}>
   <header class="pm-topbar">
     <div class="pm-wrap">
       <a class="pm-brand" href="{{ pm_dashboard_url }}" title="Back to the dashboard">
@@ -19,7 +20,6 @@
       {% block topbar %}
         {% if pm_challenge %}<span class="pm-pill plain mono">{{ pm_challenge.code }}</span>{% endif %}
         {% if pm_content.risk or pm_hints %}<button class="pm-btn sm" type="button" id="pm-hints-open">Hints</button>{% endif %}
-        <a class="pm-btn ghost sm" href="{{ pm_dashboard_url }}">Dashboard</a>
       {% endblock %}
       <button class="pm-btn ghost sm" type="button" onclick="PM.theme.toggle()" aria-label="Switch light or dark theme">Theme</button>
     </div>
@@ -32,6 +32,7 @@
         <div class="pm-challenge-head">
           <span class="pm-code">{{ pm_challenge.code }}{% if pm_challenge.was %} <span class="muted">· was {{ pm_challenge.was }}</span>{% endif %}</span>
           <h1>{{ pm_challenge.title }}</h1>
+          {% if pm_app %}<span class="pm-app-badge"><span class="pm-app-mark" aria-hidden="true">M</span>Target app: <b>{{ pm_app }}</b></span>{% endif %}
         </div>
         {% endif %}
       {% endblock %}
