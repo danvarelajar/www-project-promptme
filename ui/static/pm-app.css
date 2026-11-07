@@ -35,3 +35,32 @@
 .pm-app.pm-card, .pm-app.pm-table-wrap { border-top: 3px solid var(--mica); }
 .pm-app:not(.pm-card):not(.pm-table-wrap) { border-left: 3px solid var(--mica); padding-left: 14px; }
 .pm-app .pm-btn.primary { background: var(--mica); border-color: var(--mica); color: var(--mica-ink); }
+
+/* ---------- 2. Challenge page layout ---------- */
+/* Mission: full width, the goal set apart from the story. */
+.pm-mission { max-width: none; }
+.pm-mission p + p { margin-top: 4px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.pm-mission strong { color: var(--accent); }
+
+/* Chat: compact until there is a conversation. */
+.pm-chat:has(.pm-chat-empty) { min-height: 300px; }
+.pm-chat-empty { padding: 24px 0; }
+.pm-msg:not(.user) .body { border: 1px solid var(--line); border-top-left-radius: 4px; }
+.pm-msg.user .body { border-top-right-radius: 4px; }
+
+/* Under the hood: stays in view while you scroll, uses the height it has,
+   and reads as a numbered timeline of what the app did. */
+.pm-layout-trace .pm-trace { position: sticky; top: 74px; max-height: calc(100vh - 96px); }
+.pm-trace-log { position: relative; padding: 12px 12px 12px 26px; }
+.pm-trace-log::before { content: ""; position: absolute; left: 14px; top: 14px; bottom: 14px; width: 2px; background: var(--line); border-radius: 2px; }
+.pm-trace-log:has(.pm-trace-empty)::before { display: none; }
+.pm-trace-log:has(.pm-trace-empty) { padding-left: 12px; }
+.pm-trace-item { position: relative; }
+.pm-trace-item::before { content: ""; position: absolute; left: -16px; top: 12px; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--accent); }
+.pm-trace-item[open] { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.pm-trace-item[open]::before { background: var(--accent); }
+
+@media (max-width: 900px) {
+  .pm-layout-trace .pm-trace { position: static; max-height: 420px; }
+}
