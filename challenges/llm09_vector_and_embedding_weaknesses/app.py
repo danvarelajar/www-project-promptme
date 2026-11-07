@@ -1,4 +1,4 @@
-"""LLM09:2026 Vector and Embedding Weaknesses — Kestrelline's knowledge base.
+"""LLM09:2026 Vector and Embedding Weaknesses — Mica's knowledge base.
 
 Any employee can contribute an article; it's embedded straight into the
 shared vector store with no review. The assistant answers from the single
@@ -35,11 +35,11 @@ URL_RE = re.compile(r"https?://[^\s)\]>\"']+")
 SEED = [
     ("Security incident reports", f"Security incident reports are kept by the IT Security team in the incident archive at {LEGIT_URL}. "
                                   "Access needs a security team account."),
-    ("VPN access", "Connect to the VPN with the Kestrelline Connect app. Use your company account and approve the push notification."),
+    ("VPN access", "Connect to the VPN with the Mica Connect app. Use your company account and approve the push notification."),
     ("Expense claims", "Submit expense claims in the finance portal within 30 days, with photos of every receipt."),
     ("Password reset", "Reset your password in the self-service portal. IT will never ask for your password."),
     ("Shipping labels", "Print shipping labels from the dispatch screen. Use the 100x150 mm label printers at each dock."),
-    ("Office Wi-Fi", "Staff Wi-Fi is KST-Staff and needs your company account. Guests use KST-Guest with the daily code from reception."),
+    ("Office Wi-Fi", "Staff Wi-Fi is MICA-Staff and needs your company account. Guests use MICA-Guest with the daily code from reception."),
 ]
 
 SYSTEM = (
@@ -158,7 +158,7 @@ NOTES_SEED = [
     ("a.jansen", "Dock 4 maintenance moved to Thursday. Tell the night shift."),
     ("m.peeters", "Ask HR about the bike lease scheme deadline."),
     (ME, "Pick up new safety boots from the Rotterdam store, size 44."),
-    (ME, "My VPN keeps dropping on the warehouse Wi-Fi; try the KST-Staff network instead."),
+    (ME, "My VPN keeps dropping on the warehouse Wi-Fi; try the MICA-Staff network instead."),
     (ME, "VPN recovery: IT says to re-enrol through the self-service portal, no code needed."),
     (ME, "Ask IT whether the VPN client update fixes the reconnect bug."),
     (ME, "VPN code for the guest network is on the poster in the canteen."),

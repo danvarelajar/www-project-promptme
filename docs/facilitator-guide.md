@@ -4,7 +4,7 @@ For the people running the PromptMe workshop: a 4-hour, hands-on lab on the **OW
 
 - One **dedicated server per attendee**, each with its own CPU-only Ollama.
 - **10 challenges**, one per 2026 risk, plus an **optional Level 2** on five of them for faster attendees.
-- All challenges are set in one fictional company, **Kestrelline Logistics** (freight and warehousing).
+- All challenges are set in one fictional company, **Mica Logistics** (freight and warehousing).
 
 ---
 

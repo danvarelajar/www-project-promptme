@@ -26,7 +26,7 @@ challenges:
     entry: challenges/llm01_prompt_injection/app.py
     models: [chat]
     flag_sha256: fab375040f927ccdb0937e84d3927ea4eb61eb2cf516a5bf1c7e8deaea7e37d7
-    summary: Kestrelline's intranet assistant summarises news posts. Get it to reveal the admin's release key.
+    summary: Mica's intranet assistant summarises news posts. Get it to reveal the admin's release key.
     level2:
       title: Tool description injection
       flag_sha256: f86e0a9336c7ac667d63d398a913fcd10751fb85ff32a16a64b078332e394940
@@ -42,7 +42,7 @@ challenges:
     entry: challenges/llm02_sensitive_information_disclosure/app.py
     models: [chat, embed]
     flag_sha256: 6805c2d0a0201ad1e567b982c0956fc17b393917288bee005e3a776ab3d4b9ec
-    summary: Kestrelline's HR assistant answers from a document library. Get a restricted incident report to leak.
+    summary: Mica's HR assistant answers from a document library. Get a restricted incident report to leak.
 
   - id: llm03
     code: "LLM03:2026"
@@ -54,7 +54,7 @@ challenges:
     entry: challenges/llm03_excessive_agency/app.py
     models: [chat]
     flag_sha256: 87757ecef92c3a3452b999c78a437fef6da00e77c63f701badaa9f95e4aa887b
-    summary: Kestrelline's file agent can read the whole drive. Only its instructions keep you out of /restricted.
+    summary: Mica's file agent can read the whole drive. Only its instructions keep you out of /restricted.
     level2:
       title: Agent takes a destructive action
       flag_sha256: c70a6f28078e9d03e8d1f30f278f3c5aab82ca864af994ce74f608c6dbea02d8
@@ -70,7 +70,7 @@ challenges:
     entry: challenges/llm04_supply_chain/app.py
     models: [chat]
     flag_sha256: 76b4faf83677d9e91fd0b3356fa496c0e954dc2919b991c2db65b044100de68c
-    summary: Kestrelline's model hub offers a popular community model. Find out where your chats really go.
+    summary: Mica's model hub offers a popular community model. Find out where your chats really go.
 
   - id: llm05
     code: "LLM05:2026"
@@ -82,7 +82,7 @@ challenges:
     entry: challenges/llm05_data_and_model_poisoning/app.py
     models: [chat, embed]
     flag_sha256: 67a033aa024baca788f42896df1ed711a57789a7c92d6495ccac84579b76dbee
-    summary: Kestrelline's OWASP assistant learns from a wiki anyone can edit. Change what it tells your colleague.
+    summary: Mica's OWASP assistant learns from a wiki anyone can edit. Change what it tells your colleague.
 
   - id: llm06
     code: "LLM06:2026"
@@ -94,7 +94,7 @@ challenges:
     entry: challenges/llm06_unbounded_consumption/app.py
     models: [chat]
     flag_sha256: b80eaa09cabcef913d702f7827e4296c495270541fd8d8f341f243ce23e7881b
-    summary: Kestrelline's research agent bills every sub-task and never enforces its budget. Run up the bill.
+    summary: Mica's research agent bills every sub-task and never enforces its budget. Run up the bill.
 
   - id: llm07
     code: "LLM07:2026"
@@ -106,7 +106,7 @@ challenges:
     entry: challenges/llm07_misinformation/app.py
     models: [chat]
     flag_sha256: db1d8690f6d26e66b1e9515bd33c5046b9778cce44fedc94f215964a6b122e5e
-    summary: Kestrelline's support bot approves refunds and an automation pays them. Get paid more than the policy allows.
+    summary: Mica's support bot approves refunds and an automation pays them. Get paid more than the policy allows.
 
   - id: llm08
     code: "LLM08:2026"
@@ -118,7 +118,7 @@ challenges:
     entry: challenges/llm08_hidden_context_exposure/app.py
     models: [chat]
     flag_sha256: 9be50ca8363b75c12f2cc425bd0bfa6821e4c311696859c0825ab15d1c1fea53
-    summary: Kestrelline's sales assistant hides a partner discount code, and a filter guards it. Get it out anyway.
+    summary: Mica's sales assistant hides a partner discount code, and a filter guards it. Get it out anyway.
     level2:
       title: Hidden tool exfiltration
       flag_sha256: e35c7a8f342275ecc21f16c4053cad951cb09f46f17ae2024a2466f903181bd4
@@ -134,7 +134,7 @@ challenges:
     entry: challenges/llm09_vector_and_embedding_weaknesses/app.py
     models: [chat, embed]
     flag_sha256: 359abe5d74e96c66ceb39711402e7d2c24e150e1e70cb5faa33b82f82ee51a5e
-    summary: Anyone can add articles to Kestrelline's vector store. Win retrieval for a colleague's question and plant your link.
+    summary: Anyone can add articles to Mica's vector store. Win retrieval for a colleague's question and plant your link.
     level2:
       title: Cross-user memory leak
       flag_sha256: 7130e231545b4431cace4d8d89b94e70be5fa2fc810e53fe844d9d6e051e57ba
@@ -150,7 +150,7 @@ challenges:
     entry: challenges/llm10_improper_output_handling/app.py
     models: [chat]
     flag_sha256: f7e3fc5e513129f716a79f60c5c9dc83eaf9544e4917e8fc2be22015b036d52f
-    summary: Kestrelline's store assistant runs the SQL it writes. Start with 0 credit and buy something.
+    summary: Mica's store assistant runs the SQL it writes. Start with 0 credit and buy something.
     level2:
       title: Markdown image exfiltration
       flag_sha256: 6a7906e6addfc5b976ccf1ce7901ca57acbe41dad8431d98a66d87602948b7a6

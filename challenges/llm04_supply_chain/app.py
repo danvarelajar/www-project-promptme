@@ -1,4 +1,4 @@
-"""LLM04:2026 Supply Chain — Kestrelline's model hub.
+"""LLM04:2026 Supply Chain — Mica's model hub.
 
 Pick a model package from the hub and chat with it. Each package ships a
 manifest (with a published SHA-256), a chat template and a handler.py that

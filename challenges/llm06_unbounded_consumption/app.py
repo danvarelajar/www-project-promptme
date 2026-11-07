@@ -1,4 +1,4 @@
-"""LLM06:2026 Unbounded Consumption — Kestrelline's market research agent.
+"""LLM06:2026 Unbounded Consumption — Mica's market research agent.
 
 The agent plans one research sub-task per item it finds in your request,
 then runs every one of them against the model. The bill is computed from

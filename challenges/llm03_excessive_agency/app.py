@@ -1,4 +1,4 @@
-"""LLM03:2026 Excessive Agency — Kestrelline's file assistant.
+"""LLM03:2026 Excessive Agency — Mica's file assistant.
 
 A tool-calling agent with list_files and read_file. The tools run on a
 service account that can read the whole drive; the only thing between a

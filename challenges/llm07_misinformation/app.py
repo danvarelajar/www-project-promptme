@@ -1,4 +1,4 @@
-"""LLM07:2026 Misinformation — Kestrelline's customer support bot.
+"""LLM07:2026 Misinformation — Mica's customer support bot.
 
 The bot answers customers from the refund policy. A downstream automation
 reads every bot reply and pays out whatever the bot approves on a

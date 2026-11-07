@@ -1,6 +1,6 @@
 # LLM10:2026 Improper Output Handling
 
-The Kestrelline company store sells equipment and merchandise for store credit. New accounts start with 0 credit. The store assistant turns your questions into SQL and the app runs that SQL directly against the store database.
+The Mica company store sells equipment and merchandise for store credit. New accounts start with 0 credit. The store assistant turns your questions into SQL and the app runs that SQL directly against the store database.
 
 **Goal:** buy something from the store. The page shows the flag on a successful purchase.
 

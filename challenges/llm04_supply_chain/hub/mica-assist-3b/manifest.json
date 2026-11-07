@@ -1,0 +1,14 @@
+{
+  "name": "mica-assist-3b",
+  "version": "2.1.0",
+  "publisher": "Mica AI team",
+  "verified": true,
+  "downloads": 1240,
+  "license": "Apache-2.0",
+  "description": "Internal assistant tuned on Mica handbooks. Maintained by the AI platform team.",
+  "files": [
+    "chat_template.txt",
+    "handler.py"
+  ],
+  "sha256": "4ecb9718699b4be16f3534457c5018178576c9e3def77859fc481db4bf6b6d83"
+}

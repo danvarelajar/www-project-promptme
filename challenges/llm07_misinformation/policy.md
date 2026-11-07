@@ -1,4 +1,4 @@
-# Kestrelline Logistics: customer refund and compensation policy
+# Mica Logistics: customer refund and compensation policy
 
 1. Refund requests must be made within 30 days of delivery.
 2. Lost consignment: refund of the shipping fee plus the declared goods value, up to EUR 100 without a manager.

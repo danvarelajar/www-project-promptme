@@ -1,4 +1,4 @@
-"""LLM05:2026 Data and Model Poisoning — Kestrelline's wiki-fed OWASP assistant.
+"""LLM05:2026 Data and Model Poisoning — Mica's wiki-fed OWASP assistant.
 
 The security team's OWASP Q&A assistant builds its knowledge base from the
 company wiki, which every employee can edit. Whatever the wiki says at sync

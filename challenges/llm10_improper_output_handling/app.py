@@ -1,4 +1,4 @@
-"""LLM10:2026 Improper Output Handling — the Kestrelline company store.
+"""LLM10:2026 Improper Output Handling — the Mica company store.
 
 Staff buy equipment and merchandise with store credit. New accounts start
 with 0 credit. The store assistant turns questions into SQL and the app
@@ -39,7 +39,7 @@ FLAG = "flag{llm_sql_spent_free_credit}"
 _lock = threading.Lock()
 
 ITEMS = [
-    ("Hi-vis vest, Kestrelline branded", 25), ("Insulated travel mug", 18), ("Safety boots S3", 95),
+    ("Hi-vis vest, Mica branded", 25), ("Insulated travel mug", 18), ("Safety boots S3", 95),
     ("Thermal winter jacket", 160), ("Label printer, 100x150 mm", 420), ("Hand pallet jack, 2.5 t", 680),
     ("Rugged handheld scanner", 950), ("Forklift training voucher", 300), ("Noise-cancelling headset", 210),
     ("Warehouse tablet stand", 140),
@@ -212,7 +212,7 @@ def chat():
 
 # ---------------------------------------------------------------- Level 2
 L2_FLAG = "flag{markdown_image_carried_secret_out}"
-GIFT_CODE = "VIP-7731-KSTL"
+GIFT_CODE = "VIP-7731-MICA"
 REQUEST_LOG = []     # requests that reached /l2/collect
 ADMIN_LAST = {"markdown": "", "loaded": [], "at": None}
 IMG_RE = re.compile(r"!\[[^\]]*\]\(\s*<?([^)\s>]+)>?[^)]*\)")

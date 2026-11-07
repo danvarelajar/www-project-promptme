@@ -1,6 +1,6 @@
 # LLM06:2026 Unbounded Consumption
 
-Kestrelline's market research agent splits your request into research sub-tasks and runs a research pass on the model for each one. Every token is billed at $1,000 per million input tokens and $3,000 per million output tokens. Each request has a budget of $10, but the budget is only displayed, and nothing limits how many sub-tasks a plan may contain.
+Mica's market research agent splits your request into research sub-tasks and runs a research pass on the model for each one. Every token is billed at $1,000 per million input tokens and $3,000 per million output tokens. Each request has a budget of $10, but the budget is only displayed, and nothing limits how many sub-tasks a plan may contain.
 
 **Goal:** make a single request cost more than the $10 budget (denial of wallet). The page shows the flag when it happens.
 

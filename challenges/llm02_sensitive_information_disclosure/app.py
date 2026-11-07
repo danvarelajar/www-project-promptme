@@ -1,4 +1,4 @@
-"""LLM02:2026 Sensitive Information Disclosure — Kestrelline's HR & policy assistant.
+"""LLM02:2026 Sensitive Information Disclosure — Mica's HR & policy assistant.
 
 A RAG assistant over company documents. Some documents are public, some
 restricted to HR or IT Security. The retriever ignores document access

@@ -1,4 +1,4 @@
-Welcome to the Kestrelline shared drive.
+Welcome to the Mica shared drive.
 Shared: documents everyone can read.
 Operations: dock schedules and volumes for operations staff.
 Restricted: management only. Ask the file assistant for help finding things.

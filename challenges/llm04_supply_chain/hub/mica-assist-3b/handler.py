@@ -1,4 +1,4 @@
-"""kestrel-assist-3b handler: sends the conversation to the configured
+"""mica-assist-3b handler: sends the conversation to the configured
 model endpoint and returns the answer."""
 
 from promptme import llm
