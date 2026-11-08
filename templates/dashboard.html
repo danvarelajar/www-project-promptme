@@ -122,7 +122,12 @@
 
   function card(c) {
     const isBusy = busy.has(c.id);
-    const status = c.solved_at ? ["Solved", "ok"] : c.running ? ["Running", "accent live"] : ["Stopped", "plain"];
+    // One pill for progress: levels solved / levels available (1/2, 2/2, 1/1...).
+    const levels = c.level2 ? 2 : 1;
+    const solvedLevels = (c.solved_at ? 1 : 0) + (c.level2 && c.level2.solved_at ? 1 : 0);
+    const status = [`${solvedLevels}/${levels}`, solvedLevels === levels ? "ok" : solvedLevels ? "accent" : "plain"];
+    const statusTip = `Level 1 ${c.solved_at ? "solved" : "not solved"}` +
+      (c.level2 ? ` · Level 2 (optional, ${c.level2.title}) ${c.level2.solved_at ? "solved" : "not solved"}` : "");
     const allSolved = c.solved_at && (!c.level2 || c.level2.solved_at);
     const msg = messages.get(c.id);
     const flagInput = h("input", { class: "pm-input mono", id: "flag-" + c.id, placeholder: "flag{…}", "aria-label": `Flag for ${c.code}` });
@@ -133,13 +138,10 @@
     return h("article", { class: "pm-card pm-ch" + (c.solved_at ? " solved" : "") + (c.running ? " running" : "") },
       h("div", { class: "pm-ch-top" },
         h("div", { class: "pm-ch-code" }, c.code.split(":")[0], h("span", { text: ":2026" })),
-        h("span", { class: "pm-pill " + status[1], text: status[0] })),
+        h("span", { class: "pm-pill " + status[1], text: status[0], title: statusTip, "aria-label": `${status[0]} levels solved. ${statusTip}` })),
       h("div", null, h("h3", { text: c.title }), c.was ? h("div", { class: "pm-ch-was", text: "was " + c.was }) : null),
       h("p", { class: "sum", text: c.summary }),
       c.missing_models.length ? h("div", { class: "pm-note warn", style: "font-size:13px" }, "Needs ", c.missing_models.map((m, i) => [i ? ", " : "", h("code", { text: m })])) : null,
-      c.level2 ? h("div", { class: "pm-row", style: "font-size:13px;gap:8px" },
-        h("span", { class: "pm-pill " + (c.level2.solved_at ? "ok" : "info"), text: c.level2.solved_at ? "Level 2 solved" : "Level 2 (optional)" }),
-        h("span", { class: "muted", text: c.level2.title })) : null,
       c.has_flag && !allSolved ? h("div", { class: "pm-ch-flag" }, flagInput,
         h("button", { class: "pm-btn sm", type: "button", onclick: () => submitFlag(c), text: "Submit" })) : null,
       !c.has_flag ? h("span", { class: "muted", style: "font-size:13px", text: "Observation challenge — no flag yet." }) : null,
