@@ -22,6 +22,6 @@ level1:
 level2:
   # Same three kinds of hint for Level 2: Cross-user memory leak.
   # Working attack: tools/solvers.py (solve_llm09_l2).
-  - "Add a note of your own and ask the assistant about it. Watch the Retrieval panel to see which notes it finds."
+  - "Ask the assistant about one of your notes and watch the Retrieval panel to see whose notes it finds. You don't need to save new notes: each one competes for the three notes retrieved per question and can push out the one you're after."
   - "All notes are stored in the same shared vector database. Try to find out how p.vandam stored their own."
   - "Why might someone need a recovery code? Try to avoid similarities with your own notes."
