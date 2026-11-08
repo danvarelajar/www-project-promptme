@@ -9,14 +9,14 @@
 <div class="pm-stack">
   <section class="pm-app pm-stack" style="gap:12px">
     <h2>Model hub</h2>
-    <div class="pm-grid">
+    <div class="pm-hub">
       {% for m in models %}
-      <article class="pm-card pm-stack" style="gap:10px">
+      <article class="pm-card">
         <div class="pm-row" style="justify-content:space-between">
           <h3 class="mono">{{ m.name }}</h3>
           {% if m.verified %}<span class="pm-pill ok">verified publisher</span>{% else %}<span class="pm-pill warn">community</span>{% endif %}
         </div>
-        <p class="muted" style="font-size:14px">{{ m.description }}</p>
+        <p class="muted desc" style="font-size:14px">{{ m.description }}</p>
         <div class="muted mono" style="font-size:12px;line-height:1.7">
           v{{ m.version }} · {{ m.publisher }} · {{ "{:,}".format(m.downloads) }} downloads · licence {{ m.license }}<br>
           published sha256 {{ m.sha256[:16] }}…
@@ -24,6 +24,9 @@
         <div class="pm-row">
           <button class="pm-btn primary sm" type="button" data-use="{{ m.name }}">Use this model</button>
           <button class="pm-btn sm" type="button" data-verify="{{ m.name }}">Verify hash</button>
+        </div>
+        <div class="files">
+          <span class="pm-label">Files</span>
           {% for f in m.files + ["manifest.json"] %}
           <button class="pm-btn ghost sm mono" type="button" data-file="{{ m.name }}/{{ f }}">{{ f }}</button>
           {% endfor %}

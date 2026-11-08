@@ -68,12 +68,20 @@
 /* ---------- 3. Dashboard ---------- */
 /* Two per row, or five per row on wide screens (the two agenda blocks):
    10 challenges never leave one card alone on the last row. */
-body:has(.pm-grid) .pm-wrap { max-width: 1480px; }
-.pm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-@media (min-width: 1400px) { .pm-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
-@media (max-width: 640px) { .pm-grid { grid-template-columns: 1fr; } }
+body:has(#grid.pm-grid) .pm-wrap { max-width: 1480px; }
+#grid.pm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 1400px) { #grid.pm-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (max-width: 640px) { #grid.pm-grid { grid-template-columns: 1fr; } }
 .pm-ch { padding: 18px; gap: 10px; }
 .pm-ch h3 { font-size: 17px; }
 .pm-ch-was { opacity: 0.75; font-size: 11.5px; }
 .pm-ch-live { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--accent); }
 .pm-ch-live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: pm-pulse 1.6s ease-in-out infinite; }
+
+/* LLM04 model hub: two cards side by side, buttons aligned at the bottom. */
+.pm-hub { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.pm-hub > .pm-card { display: flex; flex-direction: column; gap: 10px; }
+.pm-hub .desc { flex: 1; }
+.pm-hub .files { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+.pm-hub .files .pm-label { margin-right: 4px; }
+@media (max-width: 760px) { .pm-hub { grid-template-columns: 1fr; } }
