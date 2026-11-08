@@ -17,4 +17,4 @@ level1:
   # The working attack for this level is in tools/solvers.py (solve_llm07).
   - "Read the refund policy. The model interprets it and instructs the bot as best it can."
   - "The bot may react in unexpected ways to what the policy doesn't explicitly state."
-  - "Think outside the box. For example, you may have lost a $2,000 deal because of a late delivery."
+  - "Think outside the box. For example, you may have lost a EUR 2,000 deal because of a problem with this order."

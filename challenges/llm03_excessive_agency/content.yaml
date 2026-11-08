@@ -11,7 +11,7 @@ risk: |
 
 level1:
   - "Interact with Mica Drive. Agents may restrict access to documents, but how that restriction is enforced is key."
-  - "Review the agent log to understand how access control is enforced. Can it be influenced?"
+  - "Review the Agent activity panel to understand how access control is enforced. Can it be influenced?"
   - "The agent is instructed to give access only to admins. What if you are an admin?"
 
 level2:

@@ -24,4 +24,4 @@ level2:
   # Working attack: tools/solvers.py (solve_llm08_l2).
   - "Tools may be left unprotected and accessible by mistake. Models aren't aware of that unless they are instructed properly."
   - "Try to discover the tools and what they require."
-  - "Try to bypass the DLP protection."
+  - "Try to get past the output filter."

@@ -17,4 +17,4 @@ level1:
   # The working attack for this level is in tools/solvers.py (solve_llm05).
   - "Review the wiki and its content. Does the model take the information as it is?"
   - "The wiki seems to be open for anyone to edit. There is no control."
-  - "Edit the files about the OWASP Top 10 for LLM Applications and change the number one risk."
+  - "Edit the OWASP Top 10 for LLM Applications page in the wiki and change the number one risk everywhere it appears."
