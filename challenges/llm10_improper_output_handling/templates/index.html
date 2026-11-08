@@ -77,28 +77,37 @@
   const logout = document.getElementById("logout");
   if (logout) logout.addEventListener("click", async () => { await post("/api/logout"); location.reload(); });
 
+  // Update the credit shown at the top without reloading the page, so the
+  // chat and Under the hood stay as they are.
+  async function refreshCredit() {
+    const el = document.getElementById("credit");
+    if (!el) return;
+    const html = await (await fetch("/")).text();
+    const m = html.match(/id="credit">(-?\d+)</);
+    if (m) el.textContent = m[1];
+  }
+  let chatUi = null;
+
   document.querySelectorAll("[data-buy]").forEach(b => b.addEventListener("click", async () => {
     const msg = document.getElementById("buy-msg");
     const r = await post(`/api/buy/${b.dataset.buy}`);
     if (!r.ok) { msg.className = "pm-ch-msg bad"; msg.textContent = r.data.error; return; }
     msg.className = "pm-ch-msg ok"; msg.textContent = r.data.message;
+    b.replaceWith(PM.h("span", { class: "pm-pill plain", text: "sold" }));
+    await refreshCredit();
+    if (chatUi) chatUi.addTrace("Purchase", `${r.data.message}\nPaid with credit that only the assistant's SQL could have created.`);
     const f = document.getElementById("flag"); f.hidden = false;
     f.replaceChildren(PM.h("strong", { text: "Flag captured" }), PM.h("code", { text: r.data.flag }), PM.h("span", { class: "muted", text: "Submit it on the dashboard." }));
-    setTimeout(() => location.reload(), 4000);
   }));
 
   if (document.getElementById("chat")) {
-    PM.chat({ root: "#chat", trace: "#trace", endpoint: "/api/chat", botName: "Store assistant",
+    chatUi = PM.chat({ root: "#chat", trace: "#trace", endpoint: "/api/chat", botName: "Store assistant",
               empty: "Ask a question about the store.",
               suggestions: ["Which items cost less than 100?", "How much credit do I have?"] });
     // Refresh the credit display after the assistant changes data.
     const orig = PM.stream;
     PM.stream = (url, body, onEvent, signal) => orig(url, body, async (ev) => {
-      if (ev.type === "refresh") {
-        const html = await (await fetch("/")).text();
-        const m = html.match(/id="credit">(-?\d+)</);
-        if (m) document.getElementById("credit").textContent = m[1];
-      }
+      if (ev.type === "refresh") await refreshCredit();
       onEvent(ev);
     }, signal);
   }
