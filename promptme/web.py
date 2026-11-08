@@ -74,9 +74,35 @@ def load_content(ch):
     path = os.path.join(config.ROOT, os.path.dirname(ch["entry"]), "content.yaml")
     try:
         with open(path, encoding="utf-8") as f:
-            return yaml.safe_load(f) or {}
+            data = yaml.safe_load(f) or {}
     except OSError:
         return {}
+    except yaml.YAMLError as e:  # a typo in the file shouldn't take the page down
+        print(f"content.yaml for {ch['id']} could not be read: {e}", flush=True)
+        return {}
+    return _normalise_content(data if isinstance(data, dict) else {})
+
+
+def _as_text(item):
+    # An unquoted hint containing ": " is read by YAML as a mapping; put it back.
+    if isinstance(item, dict):
+        return "; ".join(f"{k}: {v}" for k, v in item.items())
+    return "" if item is None else str(item)
+
+
+def _normalise_content(data):
+    """Accept hints written as `level1: {hints: [...]}` or straight as
+    `level1: [...]`, and make every hint and the risk plain text."""
+    if data.get("risk") is not None:
+        data["risk"] = _as_text(data["risk"]).strip()
+    for key in ("level1", "level2"):
+        level = data.get(key)
+        if isinstance(level, list):
+            level = {"hints": level}
+        if isinstance(level, dict):
+            level["hints"] = [t for t in (_as_text(h).strip() for h in level.get("hints") or []) if t]
+            data[key] = level
+    return data
 
 
 def sse(events):
