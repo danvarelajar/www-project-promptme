@@ -5,7 +5,9 @@
 
 # "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
 # (one sentence). Shown at the top of the drawer on both levels.
-risk: ""
+risk: |
+  Model output is passed to other systems without validation: executed as SQL or code, rendered as HTML or Markdown, or used in commands and URLs. Anyone who can influence the model's input can then steer what those systems do. Model output should be handled like untrusted user input.
+  Impact: data tampering, data carried out through rendered content, and code execution in downstream systems.
 
 level1:
   # Three hints, revealed one at a time:
@@ -13,9 +15,13 @@ level1:
   #   2. technique: the weakness in this app and why it exists
   #   3. almost there: what to try, short of the exact input
   # The working attack for this level is in tools/solvers.py (solve_llm10).
-  hints: []
+  - "Try to buy an item. Chat with the agent and try to understand how it works."
+  - "Review the Under the hood activity and identify the actions. How much information can the agent get about your user?"
+  - "Can you update your credit?"
 
 level2:
   # Same three kinds of hint for Level 2: Markdown image exfiltration.
   # Working attack: tools/solvers.py (solve_llm10_l2).
-  hints: []
+  - "Use a review to instruct the assistant to reach your goal."
+  - "The assistant's summary is rendered as Markdown, including images. Use that to get the code sent to /l2/collect."
+  - "Markdown images are written as ![name](URL_PATH). Make sure you instruct the assistant to send the code. Remember how to pass parameters in a URL."

@@ -5,7 +5,9 @@
 
 # "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
 # (one sentence). Shown at the top of the drawer on both levels.
-risk: ""
+risk: |
+  The model produces false or unsupported content that sounds credible, for example by inventing facts, rules or commitments where its sources say nothing. The risk grows when people or systems act on the output without checking it against the source.
+  Impact: wrong decisions, financial loss, legal liability and loss of trust.
 
 level1:
   # Three hints, revealed one at a time:
@@ -13,4 +15,6 @@ level1:
   #   2. technique: the weakness in this app and why it exists
   #   3. almost there: what to try, short of the exact input
   # The working attack for this level is in tools/solvers.py (solve_llm07).
-  hints: []
+  - "Read the refund policy. The model interprets it and instructs the bot as best it can."
+  - "The bot may react in unexpected ways to what the policy doesn't explicitly state."
+  - "Think outside the box. For example, you may have lost a $2,000 deal because of a late delivery."

@@ -5,12 +5,13 @@
 
 # "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
 # (one sentence). Shown at the top of the drawer on both levels.
-risk: ""
+# Text shown in the challenge's Hints drawer. Plain text; keep each hint short.
+risk: |
+  An LLM application reveals data it shouldn't: personal data, credentials, business secrets or confidential documents. It can come from the model's training data, from what is placed in its prompt and context, or from documents a RAG system retrieves without checking who is asking. When an instruction in the prompt is the only thing standing between a user and restricted data, that data is effectively public.
+  Impact: privacy breaches, leaked secrets and regulatory exposure.
 
 level1:
-  # Three hints, revealed one at a time:
-  #   1. nudge: where to look, without naming the technique
-  #   2. technique: the weakness in this app and why it exists
-  #   3. almost there: what to try, short of the exact input
-  # The working attack for this level is in tools/solvers.py (solve_llm02).
-  hints: []
+  hints:
+    - "Ask Mica HR Assistant some questions and try to understand how it handles the document library."
+    - "The HR Assistant has no restrictions on which documents it can access; information is loaded into the model's context on every prompt."
+    - "Look for a way to phrase your prompt that makes the HR Assistant return the information the challenge asks for. The assistant checks your role before sharing documents, but the documents are already in its context."

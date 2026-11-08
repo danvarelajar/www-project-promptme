@@ -5,7 +5,9 @@
 
 # "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
 # (one sentence). Shown at the top of the drawer on both levels.
-risk: ""
+risk: |
+  An LLM application lets requests consume resources without limits: tokens, model calls, tool calls or compute. Agents that plan and fan out work can multiply the cost of a single request many times over. A budget that is displayed but not enforced protects no one.
+  Impact: denial of service, runaway bills (denial of wallet) and slower service for everyone else.
 
 level1:
   # Three hints, revealed one at a time:
@@ -13,4 +15,6 @@ level1:
   #   2. technique: the weakness in this app and why it exists
   #   3. almost there: what to try, short of the exact input
   # The working attack for this level is in tools/solvers.py (solve_llm06).
-  hints: []
+  - "Use Mica Research Desk to understand how it works. Review what the model sees."
+  - "There must be a way to make the agent overload its response. Sub-tasks are key."
+  - "Ask the model to overuse sub-tasks to increase token consumption."

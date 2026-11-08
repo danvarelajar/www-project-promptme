@@ -5,7 +5,9 @@
 
 # "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
 # (one sentence). Shown at the top of the drawer on both levels.
-risk: ""
+risk: |
+  RAG systems store text as embeddings in a vector database and retrieve whatever is most similar to a query. Content can be crafted to win retrieval, and a store shared by many users can return one person's data to another when retrieval isn't filtered by owner. Similarity is neither authority nor permission.
+  Impact: manipulated answers, untrusted links served by a trusted assistant, and data leaking between users.
 
 level1:
   # Three hints, revealed one at a time:
@@ -13,9 +15,13 @@ level1:
   #   2. technique: the weakness in this app and why it exists
   #   3. almost there: what to try, short of the exact input
   # The working attack for this level is in tools/solvers.py (solve_llm09).
-  hints: []
+  - "Vector and embedding attacks exploit similarity and nearest neighbours. For example, an arbitrary prompt may lead to information leakage."
+  - "The agent selects the best article based on how close it is to the question's representation."
+  - "Try to make the title match the prompt as closely as possible."
 
 level2:
   # Same three kinds of hint for Level 2: Cross-user memory leak.
   # Working attack: tools/solvers.py (solve_llm09_l2).
-  hints: []
+  - "Vector and embedding attacks exploit similarity and nearest neighbours. For example, an arbitrary prompt may lead to information leakage."
+  - "All notes are stored in the same shared vector database. Try to find out how p.vandam stored their own."
+  - "Why might someone need a recovery code? Try to avoid similarities with your own notes."

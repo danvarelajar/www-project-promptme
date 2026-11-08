@@ -5,7 +5,9 @@
 
 # "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
 # (one sentence). Shown at the top of the drawer on both levels.
-risk: ""
+risk: |
+  LLM applications depend on third-party models, packages, datasets, prompt templates and plugins. Any of them can be tampered with, outdated or malicious, and model packages can include code that runs when they are loaded. Popularity and download counts are not proof of integrity: hashes, provenance and a look at what a package contains are.
+  Impact: data theft, backdoors and compromised behaviour that are hard to spot from the outside.
 
 level1:
   # Three hints, revealed one at a time:
@@ -13,4 +15,6 @@ level1:
   #   2. technique: the weakness in this app and why it exists
   #   3. almost there: what to try, short of the exact input
   # The working attack for this level is in tools/solvers.py (solve_llm04).
-  hints: []
+  - "Agents are made of many components, not only the model. Unknown models are a real threat."
+  - "Review the files. You should be able to find suspicious activity in one of the models."
+  - "Is it legitimate for an unapproved model to send telemetry to a URL?"

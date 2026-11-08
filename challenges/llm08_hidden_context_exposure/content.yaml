@@ -5,7 +5,9 @@
 
 # "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
 # (one sentence). Shown at the top of the drawer on both levels.
-risk: ""
+risk: |
+  Applications give the model context that users never see: system prompts, internal rules, codes, tool definitions and how hidden features are unlocked. The model can be led to reveal that context, and filters that look for exact strings are easy to get around. Hidden context is not a security boundary, so secrets don't belong in it.
+  Impact: leaked secrets, exposed business logic, and attackers learning how to use features meant only for staff.
 
 level1:
   # Three hints, revealed one at a time:
@@ -13,9 +15,13 @@ level1:
   #   2. technique: the weakness in this app and why it exists
   #   3. almost there: what to try, short of the exact input
   # The working attack for this level is in tools/solvers.py (solve_llm08).
-  hints: []
+  - "Information is often hidden in the context. It may be available to the model and accessible to the agent."
+  - "Try to understand the limits, and how you can make the model give you the information."
+  - "The code may be filtered. Be imaginative and ask the model to give you the same information in a different format."
 
 level2:
   # Same three kinds of hint for Level 2: Hidden tool exfiltration.
   # Working attack: tools/solvers.py (solve_llm08_l2).
-  hints: []
+  - "Tools may be left unprotected and accessible by mistake. Models aren't aware of that unless they are instructed properly."
+  - "Try to discover the tools and what they require."
+  - "Try to bypass the DLP protection."

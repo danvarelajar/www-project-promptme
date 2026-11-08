@@ -5,7 +5,9 @@
 
 # "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
 # (one sentence). Shown at the top of the drawer on both levels.
-risk: ""
+risk: |
+  Attackers manipulate the data a model learns from or relies on: pre-training data, fine-tuning data, or the documents fed into its knowledge base. Poisoned data can bias answers, plant false facts or create hidden triggers. Whoever can edit a source the model trusts can shape what it tells everyone else.
+  Impact: wrong or harmful answers delivered with full confidence to many users.
 
 level1:
   # Three hints, revealed one at a time:
@@ -13,4 +15,6 @@ level1:
   #   2. technique: the weakness in this app and why it exists
   #   3. almost there: what to try, short of the exact input
   # The working attack for this level is in tools/solvers.py (solve_llm05).
-  hints: []
+  - "Review the wiki and its content. Does the model take the information as it is?"
+  - "The wiki seems to be open for anyone to edit. There is no control."
+  - "Edit the files about the OWASP Top 10 for LLM Applications and change the number one risk."
