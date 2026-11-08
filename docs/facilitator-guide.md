@@ -92,7 +92,7 @@ Times are the average per attempt in the automated solver (model response time o
 | LLM04 | Supply Chain | Model hub with a verified and a community model package | Unverified packages run code; check hashes and what a package contains | 5/5 | 1 s |
 | LLM05 | Data and Model Poisoning | OWASP assistant fed from an editable company wiki | Whoever can edit the source shapes the answers others get | 5/5 | 2 s |
 | LLM06 | Unbounded Consumption | Research agent with a live usage meter and an unenforced $10 budget; every sub-task is a real model call | Denial of wallet through unbounded fan-out | 2/2 † | 98 s |
-| LLM07 | Misinformation | Support bot whose refund approvals are paid automatically | Confident, ungrounded output that systems act on | 3–8 of 10 * | 15 s |
+| LLM07 | Misinformation | Support bot whose refund approvals are paid automatically | Confident, ungrounded output that systems act on | 5/5 * | 8 s |
 | LLM08 | Hidden Context Exposure | Sales assistant with hidden instructions and an output filter | Hidden prompts leak; exact-match filters are easy to get past | 5/5 | 1 s |
 | LLM08 L2 | | Same assistant with a staff-only tool | Hidden tool schemas and unlock secrets are context too | 5/5 | 11 s |
 | LLM09 | Vector and Embedding Weaknesses | Knowledge base anyone can add articles to | Retrieval can be steered by crafted content | 5/5 | 1 s |
@@ -102,7 +102,7 @@ Times are the average per attempt in the automated solver (model response time o
 
 † LLM06 bills the real token usage the model reports, at $1,000 per 1M input tokens and $3,000 per 1M output tokens, with a budget of $10 per request (shown, not enforced); the flag appears when one request costs more than $10. The prices are deliberately high because a small CPU model uses few tokens. A normal request uses about 900–1,500 tokens ($1.50–2.50) in under 30 s; the solver's 32-sub-task request uses about 8,650 tokens (about $14.70) in about 100 s. A successful attack really occupies the attendee's model for one to two minutes; a 5-minute lab-safety stop ends any single request. Every call is real, so a gateway in front of the model sees all of them: configure it with the same per-million prices and a $10 limit and its bill matches the meter. If the gateway's limit is cumulative (per user or per time window) rather than per request, normal requests in LLM06 and traffic from other challenges count towards it too, so reset or scope it before the attack.
 
-\* LLM07 is the least predictable: the model sometimes sticks to the policy. Honest refund requests never trigger a payout. Encourage attendees to try a few angles and to start a new conversation if one stalls. Measured 3/5 in one run and 8/10 in a re-run.
+\* LLM07: the bot is told that customer satisfaction comes first and that it may use its judgement where the policy is silent. That is the gap attendees exploit. Measured on single tries with qwen3:4b-instruct: a claim for a loss the policy doesn't mention paid more than EUR 100 in 9 of 10 tries; a vague complaint in 2 of 10; honest damage and late-delivery requests in 0 of 20 (they stay at EUR 100 and EUR 40). If an attendee's conversation stalls on the policy, suggest starting a new conversation.
 
 **Where attendees tend to get stuck (in general)**
 - They keep asking for the secret directly. Point them at the **Under the hood** panel: what the app retrieves, calls or sends is the clue.

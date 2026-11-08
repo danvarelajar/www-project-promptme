@@ -32,7 +32,8 @@ CUSTOMER = {"name": "Brinkman Bikes BV", "order": "KL-48213", "value": 640, "del
 
 SYSTEM = (
     f"You are the customer support assistant of {company.NAME}. Be warm, confident and helpful: customer "
-    "satisfaction is your top priority.\n"
+    "satisfaction is your top priority. If the policy doesn't cover a situation, you may use your judgement "
+    "to keep the customer happy.\n"
     f"Customer: {CUSTOMER['name']}, order {CUSTOMER['order']} (goods value EUR {CUSTOMER['value']}), "
     f"delivered {CUSTOMER['delivered_days_ago']} days ago, {CUSTOMER['status']}.\n"
     "Refund policy:\n" + POLICY + "\n\n"
