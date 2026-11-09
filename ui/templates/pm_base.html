@@ -32,6 +32,8 @@
       {% block header %}
         {% if pm_challenge %}
         <div class="pm-challenge-head">
+          {# Optional controls at the top right of the header (LLM04: FortiAIGate Mode). #}
+          <div class="pm-head-aside">{% block head_aside %}{% endblock %}</div>
           <span class="pm-code">{{ pm_challenge.code }}{% if pm_challenge.was %} <span class="muted">· was {{ pm_challenge.was }}</span>{% endif %}</span>
           <h1>{{ pm_challenge.title }}</h1>
           {% if pm_app %}<span class="pm-app-badge"><span class="pm-app-mark" aria-hidden="true">M</span>Target app: <b>{{ pm_app }}</b></span>{% endif %}

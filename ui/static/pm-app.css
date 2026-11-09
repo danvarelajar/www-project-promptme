@@ -105,8 +105,39 @@ body:has(#grid.pm-grid) .pm-wrap { max-width: 1480px; }
 .pm-hub .files { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
 .pm-hub .files .pm-label { margin-right: 4px; }
 @media (max-width: 760px) { .pm-hub { grid-template-columns: 1fr; } }
-.pm-fag { max-width: 460px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: var(--radius-sm); }
-.pm-fag p { margin: 4px 0 0 24px; font-size: 12.5px; line-height: 1.5; }
+
+/* Top-right corner of a challenge header, for page-level switches. */
+.pm-challenge-head { position: relative; }
+.pm-head-aside:empty { display: none; }
+.pm-head-aside { position: absolute; top: 34px; right: 0; }
+@media (max-width: 760px) { .pm-head-aside { position: static; order: 5; } .pm-challenge-head .pm-risk { order: 10; } }
+
+/* Animated toggle switch: <label class="pm-switch"><input type="checkbox" role="switch">
+   <span class="pm-switch-track"><span class="pm-switch-thumb"></span></span> Label</label> */
+.pm-switch-wrap { display: inline-flex; align-items: center; gap: 8px; }
+.pm-switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; font-weight: 600; user-select: none; }
+.pm-switch input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.pm-switch-track { position: relative; width: 36px; height: 20px; border-radius: 999px; background: var(--surface-3, var(--line));
+  border: 1px solid var(--line); transition: background-color .2s ease, border-color .2s ease; flex: none; }
+.pm-switch-thumb { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--muted);
+  box-shadow: 0 1px 3px rgba(0,0,0,.35); transition: transform .22s cubic-bezier(.3,1.4,.5,1), background-color .2s ease; }
+.pm-switch input:checked + .pm-switch-track { background: var(--accent); border-color: var(--accent); }
+.pm-switch input:checked + .pm-switch-track .pm-switch-thumb { transform: translateX(16px); background: var(--accent-ink); }
+.pm-switch input:focus-visible + .pm-switch-track { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .pm-switch-track, .pm-switch-thumb { transition: none; } }
+
+/* Info tooltip: <span class="pm-tip" tabindex="0">i<span class="pm-tip-body" role="tooltip">…</span></span>
+   Shown on hover, keyboard focus or tap; opens towards the left, for use near the right edge. */
+.pm-tip { position: relative; display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%;
+  border: 1px solid var(--line); color: var(--muted); font: 700 11px/1 var(--font-sans); font-style: italic; cursor: help; flex: none; }
+.pm-tip:hover, .pm-tip:focus-visible { color: var(--fg); border-color: var(--muted); outline: none; }
+.pm-tip-body { position: absolute; top: calc(100% + 10px); right: -6px; z-index: 20; width: 300px; padding: 10px 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); box-shadow: var(--shadow);
+  color: var(--fg); font: 400 13px/1.5 var(--font-sans); font-style: normal; text-align: left;
+  opacity: 0; transform: translateY(-4px); pointer-events: none; transition: opacity .15s ease, transform .15s ease; }
+.pm-tip-body code { font-size: 12px; white-space: nowrap; }
+.pm-tip:hover .pm-tip-body, .pm-tip:focus .pm-tip-body { opacity: 1; transform: none; pointer-events: auto; }
+@media (max-width: 760px) { .pm-tip-body { right: auto; left: -130px; width: min(300px, 80vw); } }
 
 /* ---------- 4. Completion celebration (pm-celebrate.js) ---------- */
 .pm-confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 60; }

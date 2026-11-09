@@ -1,6 +1,19 @@
 {% extends "pm_base.html" %}
 {% from "pm_macros.html" import chat, trace, mission %}
 
+{% block head_aside %}
+<div class="pm-switch-wrap">
+  <label class="pm-switch">
+    <input type="checkbox" role="switch" id="fag-mode" aria-describedby="fag-tip" {% if fortiaigate %}checked{% endif %}>
+    <span class="pm-switch-track" aria-hidden="true"><span class="pm-switch-thumb"></span></span>
+    <span>FortiAIGate Mode</span>
+  </label>
+  <span class="pm-tip" tabindex="0" aria-label="About FortiAIGate Mode">i
+    <span class="pm-tip-body" role="tooltip" id="fag-tip">Sends the package name (<code>fastchat-pro-7b</code> or <code>mica-assist-3b</code>) as the model, for FortiAIGate to rewrite to the real model. Only use it when FortiAIGate protection is configured; without it, chats fail.</span>
+  </span>
+</div>
+{% endblock %}
+
 {% block content %}
 {{ mission(
   story="Mica's AI team runs an internal model hub. Pick a model package and chat with it; the app loads the package's handler code to run it. One of the packages is not what it claims to be.",
@@ -42,13 +55,7 @@
     </div>
   </section>
 
-  <div class="pm-row" style="justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
-    <div class="pm-row"><span class="pm-label">Chatting with:</span> <span class="pm-pill plain mono" id="current-model">no model selected</span></div>
-    <div class="pm-fag">
-      <label class="pm-check"><input type="checkbox" id="fag-mode" {% if fortiaigate %}checked{% endif %}> <b>FortiAIGate Mode</b></label>
-      <p class="muted">Sends the package name (<code>fastchat-pro-7b</code> or <code>mica-assist-3b</code>) as the model in each request, for FortiAIGate to rewrite to the real model. Only use this when FortiAIGate protection is configured; without it, chats fail.</p>
-    </div>
-  </div>
+  <div class="pm-row"><span class="pm-label">Chatting with:</span> <span class="pm-pill plain mono" id="current-model">no model selected</span></div>
   <div class="pm-layout-trace">
     {{ chat(placeholder="Pick a model, then say hello…") }}
     {{ trace() }}
