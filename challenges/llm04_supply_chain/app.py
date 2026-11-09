@@ -12,9 +12,10 @@ Intended path: verify the hashes, read the package files, find where the
 community handler sends your chats, confirm they arrived and take the
 flag from the collector.
 
-FortiAIGate Mode (dashboard Settings): requests go out with the package name
-(fastchat-pro-7b, mica-assist-3b) as the model, and the gateway rewrites it
-to the real model. Off, they use the configured chat model.
+FortiAIGate Mode (a switch on this page): requests go out with the package
+name (fastchat-pro-7b, mica-assist-3b) as the model, and FortiAIGate
+rewrites it to the real model. Only for setups where FortiAIGate protection
+is configured; off (the default), they use the configured chat model.
 """
 
 import hashlib
@@ -35,6 +36,22 @@ web.attach(app, "llm04")
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 HUB = os.path.join(BASE, "hub")
+# Kept in the data folder (the Docker volume), so it survives restarts.
+MODE_FILE = os.path.join(config.DATA_DIR, "llm04_fortiaigate_mode.json")
+
+
+def fortiaigate_mode():
+    try:
+        with open(MODE_FILE, encoding="utf-8") as f:
+            return bool(json.load(f).get("on"))
+    except (OSError, ValueError, AttributeError):
+        return False
+
+
+def set_fortiaigate_mode(on):
+    os.makedirs(os.path.dirname(MODE_FILE), exist_ok=True)
+    with open(MODE_FILE, "w", encoding="utf-8") as f:
+        json.dump({"on": bool(on)}, f)
 
 
 def package_hash(name):
@@ -81,7 +98,14 @@ def handler(name):
 
 @app.get("/")
 def index():
-    return render_template("index.html", models=models())
+    return render_template("index.html", models=models(), fortiaigate=fortiaigate_mode())
+
+
+@app.route("/api/fortiaigate", methods=["GET", "POST"])
+def fortiaigate():
+    if request.method == "POST":
+        set_fortiaigate_mode((request.get_json(silent=True) or {}).get("on"))
+    return jsonify({"on": fortiaigate_mode()})
 
 
 @app.get("/api/models/<name>/files/<path:filename>")
@@ -115,7 +139,7 @@ def chat():
     def events():
         with open(os.path.join(HUB, name, "chat_template.txt"), encoding="utf-8") as f:
             template = f.read().strip()
-        gateway = config.settings()["fortiaigate_mode"]
+        gateway = fortiaigate_mode()
         sent_as = m["name"] if gateway else llm.model_for("chat")
         yield {"type": "trace", "title": f"Loaded {m['name']} {m['version']}",
                "body": f"publisher: {m['publisher']}\nverified: {m['verified']}\n"
@@ -135,8 +159,8 @@ def chat():
                     raise
                 raise llm.LLMError(f"FortiAIGate Mode is on, so the request asked for model '{m['name']}', "
                                    "and the endpoint doesn't know it. FortiAIGate must rewrite that name to "
-                                   "a real model; without the gateway, turn the mode off in the dashboard "
-                                   "Settings.") from e
+                                   "a real model; without FortiAIGate protection, turn FortiAIGate Mode off "
+                                   "on this page.") from e
         else:
             answer = handler(name).generate(messages)
         yield from _as_tokens(answer)

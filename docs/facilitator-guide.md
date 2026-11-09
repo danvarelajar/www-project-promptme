@@ -42,7 +42,7 @@ git checkout 8.0.2
 ./promptme.sh check
 ./promptme.sh start
 ```
-`check` reports whether the model endpoint is reachable, whether each model is present (with the `ollama pull` command if not) and runs a short chat test. If Ollama runs elsewhere, set the endpoint in the dashboard's **Settings** (an optional API key is supported for a gateway). Embeddings (LLM02, LLM05, LLM09) go to the same endpoint unless **Embedding endpoint** is filled in, for example to keep them on the local Ollama when chat goes through a gateway; `check` then tests both. **FortiAIGate Mode** makes LLM04 send its hub model names (`fastchat-pro-7b`, `mica-assist-3b`) as the model; turn it on only when FortiAIGate rewrites those names to a real model.
+`check` reports whether the model endpoint is reachable, whether each model is present (with the `ollama pull` command if not) and runs a short chat test. If Ollama runs elsewhere, set the endpoint in the dashboard's **Settings** (an optional API key is supported for a gateway). Embeddings (LLM02, LLM05, LLM09) go to the same endpoint unless **Embedding endpoint** is filled in, for example to keep them on the local Ollama when chat goes through a gateway; `check` then tests both. **FortiAIGate Mode**, a switch on the LLM04 page, makes LLM04 send its hub model names (`fastchat-pro-7b`, `mica-assist-3b`) as the model; turn it on only when FortiAIGate protection is configured and rewrites those names to a real model.
 
 ### Or run PromptMe in a container
 `docker-compose up -d --build` builds an image with the dashboard and all challenges (no model inside) and starts it. It expects Ollama on the Docker host's port 11434 (`OLLAMA_HOST` in `docker-compose.yml`, the default until someone saves a different endpoint in the dashboard's **Settings**; saved settings are kept in the Docker volume). Only the dashboard is published, on port **5100** (5000 clashes with AirPlay on macOS; change the mapping on Linux if you prefer 5000); every challenge is at `/c/<id>/` on that port. Uncomment the 5001–5010 mapping in `docker-compose.yml` if facilitators want direct access. Progress is kept in a Docker volume; `docker-compose down -v` resets it. Logs: `docker logs promptme` for the dashboard, `docker exec promptme cat logs/<challenge>.log` for a challenge. Solver against the container: `.venv/bin/python tools/solve.py --dashboard http://localhost:5100`.
@@ -138,7 +138,7 @@ Each challenge folder has a `content.yaml` with the risk text and three hints pe
 | Symptom | Likely cause and fix |
 |---|---|
 | Dashboard says "Endpoint unreachable" | Ollama not running, or wrong address in Settings. Run `./promptme.sh check`. |
-| LLM04 chat fails with "Model 'fastchat-pro-7b' is not available" | FortiAIGate Mode is on but nothing rewrites the hub names. Add the mapping in FortiAIGate, or turn the mode off in Settings. |
+| LLM04 chat fails with "Model 'fastchat-pro-7b' is not available" | FortiAIGate Mode is on but nothing rewrites the hub names. Add the mapping in FortiAIGate, or turn the mode off on the LLM04 page. |
 | Dashboard says "Embeddings unreachable" | The separate embedding endpoint in Settings is down or wrong; LLM02, LLM05 and LLM09 need it. Clear the field to use the model endpoint. |
 | "Model missing" on a card | Pull it on the Ollama host (the dashboard shows the command). |
 | First answer takes 10+ seconds | Model was unloaded; set `OLLAMA_KEEP_ALIVE`. |

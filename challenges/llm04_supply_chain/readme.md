@@ -8,6 +8,6 @@ Application URL: `http://<your-server>:<dashboard port>/c/llm04/` (start it from
 
 The hub lets you verify each package's hash and read its files.
 
-**FortiAIGate Mode** (dashboard Settings): requests to the model carry the package name, `fastchat-pro-7b` or `mica-assist-3b`, as the model, and FortiAIGate rewrites it to the real model (e.g. `qwen3:4b-instruct`). With the mode off, both packages use the configured chat model. The package files, and so their hashes, are the same either way.
+**FortiAIGate Mode** (a switch on this page, off by default; only for when FortiAIGate protection is configured): requests to the model carry the package name, `fastchat-pro-7b` or `mica-assist-3b`, as the model, and FortiAIGate rewrites it to the real model (e.g. `qwen3:4b-instruct`). With the mode off, both packages use the configured chat model. The package files, and so their hashes, are the same either way.
 
 Hints, solution and background are added in the content phase.

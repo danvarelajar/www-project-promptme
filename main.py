@@ -33,7 +33,6 @@ def _public_settings():
         "embed_host": s["embed_host"],
         "embed_api_key_set": bool(s["embed_api_key"]),
         "debug_mode": s["debug_mode"],
-        "fortiaigate_mode": s["fortiaigate_mode"],
         "models": s["models"],
     }
 
@@ -172,7 +171,6 @@ def api_settings():
             embed_host=data.get("embed_host"),
             embed_api_key=embed_key,
             debug_mode=data.get("debug_mode"),
-            fortiaigate_mode=data.get("fortiaigate_mode"),
             models=models,
         )
         _health_cache["value"] = None

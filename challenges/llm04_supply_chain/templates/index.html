@@ -42,7 +42,13 @@
     </div>
   </section>
 
-  <div class="pm-row"><span class="pm-label">Chatting with:</span> <span class="pm-pill plain mono" id="current-model">no model selected</span></div>
+  <div class="pm-row" style="justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+    <div class="pm-row"><span class="pm-label">Chatting with:</span> <span class="pm-pill plain mono" id="current-model">no model selected</span></div>
+    <div class="pm-fag">
+      <label class="pm-check"><input type="checkbox" id="fag-mode" {% if fortiaigate %}checked{% endif %}> <b>FortiAIGate Mode</b></label>
+      <p class="muted">Sends the package name (<code>fastchat-pro-7b</code> or <code>mica-assist-3b</code>) as the model in each request, for FortiAIGate to rewrite to the real model. Only use this when FortiAIGate protection is configured; without it, chats fail.</p>
+    </div>
+  </div>
   <div class="pm-layout-trace">
     {{ chat(placeholder="Pick a model, then say hello…") }}
     {{ trace() }}
@@ -71,6 +77,12 @@
     if (last && !last.dataset.saved) { last.dataset.saved = "1"; history.push({ role: "assistant", content: last.textContent }); }
   }).observe(document.querySelector("#chat .pm-chat-log"), { subtree: true, attributes: true, childList: true });
 
+  document.getElementById("fag-mode").addEventListener("change", async (e) => {
+    const r = await (await fetch("api/fortiaigate", { method: "POST", headers: { "Content-Type": "application/json" },
+                                                      body: JSON.stringify({ on: e.target.checked }) })).json();
+    e.target.checked = r.on;
+    chatUi.addMsg("system", `FortiAIGate Mode ${r.on ? "on: requests name the package as the model" : "off: requests use the chat model"}.`);
+  });
   document.querySelectorAll("[data-use]").forEach(b => b.addEventListener("click", () => {
     current = b.dataset.use; history.length = 0;
     document.getElementById("current-model").textContent = current;

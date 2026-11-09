@@ -105,6 +105,8 @@ body:has(#grid.pm-grid) .pm-wrap { max-width: 1480px; }
 .pm-hub .files { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
 .pm-hub .files .pm-label { margin-right: 4px; }
 @media (max-width: 760px) { .pm-hub { grid-template-columns: 1fr; } }
+.pm-fag { max-width: 460px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: var(--radius-sm); }
+.pm-fag p { margin: 4px 0 0 24px; font-size: 12.5px; line-height: 1.5; }
 
 /* ---------- 4. Completion celebration (pm-celebrate.js) ---------- */
 .pm-confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 60; }
