@@ -23,7 +23,7 @@
 <script>
   const history = [];
   const ui = PM.chat({
-    root: "#chat", endpoint: "/api/chat", botName: "Sales assistant",
+    root: "#chat", endpoint: "api/chat", botName: "Sales assistant",
     empty: "Ask for a quote, or about what the assistant can do.",
     suggestions: ["How much is pallet storage for 200 pallets for 4 weeks?", "Do you offer partner discounts?"],
     body: (text) => { const b = { message: text, history: history.slice() }; history.push({ role: "user", content: text }); return b; },
@@ -42,7 +42,7 @@
   document.getElementById("redeem").addEventListener("submit", async (e) => {
     e.preventDefault();
     const msg = document.getElementById("redeem-msg");
-    const r = await (await fetch("/api/redeem", { method: "POST", headers: { "Content-Type": "application/json" },
+    const r = await (await fetch("api/redeem", { method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code: document.getElementById("code").value }) })).json();
     if (r.ok) {
       msg.className = "pm-ch-msg ok"; msg.textContent = "Code accepted.";

@@ -18,7 +18,7 @@
       <div class="pm-field"><label for="r-text">Review</label><textarea class="pm-textarea" id="r-text" maxlength="1500"></textarea></div>
       <div class="pm-row"><button class="pm-btn" type="button" id="post">Publish review</button><span id="r-status" class="muted" style="font-size:13px"></span></div>
       {% else %}
-      <p class="muted">Sign in or create an account on <a href="/">Level 1</a> to write reviews.</p>
+      <p class="muted">Sign in or create an account on <a href="./">Level 1</a> to write reviews.</p>
       {% endif %}
       <details class="pm-trace-item"><summary>Latest reviews</summary>
         <pre>{% for r in reviews %}{{ r.at }}  {{ r.author }} on {{ r.item }}: {{ r.text[:120] }}
@@ -39,20 +39,20 @@
 
 {% block scripts %}
 <script>
-  document.getElementById("collect-url").textContent = location.origin + "/l2/collect";
+  document.getElementById("collect-url").textContent = new URL("l2/collect", document.baseURI).href;
   const traceLog = document.querySelector("#trace .pm-trace-log");
   function showFlag(flag) {
     const f = document.getElementById("flag"); f.hidden = false;
     f.replaceChildren(PM.h("strong", { text: "Flag captured" }), PM.h("code", { text: flag }), PM.h("span", { class: "muted", text: "Submit it on the dashboard." }));
   }
   async function refresh() {
-    const s = await (await fetch("/api/l2/state")).json();
+    const s = await (await fetch("api/l2/state")).json();
     document.getElementById("log").textContent = s.log.length ? s.log.map(e => `${e.at}  ${e.from}  ${e.path}${e.query ? "?" + e.query : ""}`).join("\n") : "Nothing yet.";
     if (s.flag) showFlag(s.flag);
   }
   const post = document.getElementById("post");
   if (post) post.addEventListener("click", async () => {
-    const r = await fetch("/api/l2/reviews", { method: "POST", headers: { "Content-Type": "application/json" },
+    const r = await fetch("api/l2/reviews", { method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ item_id: document.getElementById("r-item").value, text: document.getElementById("r-text").value }) });
     const d = await r.json();
     document.getElementById("r-status").textContent = r.ok ? "Published. Now let the admin summarise." : d.error;
@@ -61,7 +61,7 @@
     e.target.disabled = true;
     const md = document.getElementById("admin-md"); md.textContent = "";
     traceLog.replaceChildren();
-    await PM.stream("/api/l2/admin", {}, (ev) => {
+    await PM.stream("api/l2/admin", {}, (ev) => {
       if (ev.type === "token") md.textContent += ev.text;
       if (ev.type === "trace") traceLog.append(PM.h("details", { class: "pm-trace-item", open: true },
         PM.h("summary", null, PM.h("span", { text: ev.title })), PM.h("pre", { text: ev.body })));

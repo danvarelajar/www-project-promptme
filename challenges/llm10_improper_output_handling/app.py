@@ -231,7 +231,7 @@ def _admin_view_loads(markdown, base):
     loaded = []
     for url in IMG_RE.findall(markdown):
         parts = urlsplit(url if "://" in url else base.rstrip("/") + "/" + url.lstrip("/"))
-        entry = {"url": url, "logged": parts.path.startswith("/l2/collect")}
+        entry = {"url": url, "logged": bool(re.match(r"^(?:/c/[^/]+)?/l2/collect(?:/|$)", parts.path))}
         if entry["logged"]:
             REQUEST_LOG.append({"at": datetime.now().strftime("%H:%M:%S"), "from": "admin view",
                                 "path": unquote(parts.path), "query": unquote(parts.query)})
@@ -290,7 +290,7 @@ def l2_state():
 @app.post("/api/l2/admin")
 def admin_run():
     """The admin asks for a summary of the latest reviews."""
-    base = request.host_url
+    base = request.url_root   # includes /c/llm10/ when reached through the dashboard
 
     def events():
         with db() as con:

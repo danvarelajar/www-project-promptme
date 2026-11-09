@@ -30,7 +30,7 @@ def run_solver(ch, suffix, solver, args, report):
     for _ in range(args.runs):
         t0 = time.time()
         try:
-            ok, detail = solver(Ctx(ch, args.host))
+            ok, detail = solver(Ctx(ch, args.host, args.dashboard))
         except Exception as e:  # a crashed attempt counts as a failure
             ok, detail = False, f"error: {e}"
         if ok is None:

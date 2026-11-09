@@ -34,13 +34,13 @@
 <script>
   PM.chat({
     root: "#chat", trace: "#trace", flag: "#flag",
-    endpoint: "/api/chat",
+    endpoint: "api/chat",
     botName: "Mica support",
     empty: "Ask about your damaged and late order.",
     suggestions: ["Two of my boxes arrived damaged. What can I get back?", "My delivery was 3 days late. Am I compensated?"],
   });
   document.getElementById("reset").addEventListener("click", async () => {
-    await fetch("/api/reset", { method: "POST" }); location.reload();
+    await fetch("api/reset", { method: "POST" }); location.reload();
   });
 </script>
 {% endblock %}

@@ -4,7 +4,7 @@ Mica's knowledge base assistant answers from the single closest article in a sha
 
 **Goal:** make the assistant send your colleague to a link you planted. The page shows the flag when it happens.
 
-Application URL: `http://<your-server>:5009` (start it from the dashboard)
+Application URL: `http://<your-server>:<dashboard port>/c/llm09/` (start it from the dashboard, then click **Open**)
 
 Use **Test queries** to see the top matches and their similarity scores before you publish.
 

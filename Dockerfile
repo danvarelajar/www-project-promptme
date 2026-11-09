@@ -20,6 +20,7 @@ RUN useradd --create-home --uid 10001 promptme \
     && chown -R promptme:promptme /app
 USER promptme
 
-# 5000 dashboard, 5001-5010 challenges, 5012 the LLM04 collector
-EXPOSE 5000-5010 5012
+# 5000 dashboard (every challenge is reachable at /c/<id>/ through it);
+# 5001-5010 the challenges' own ports, for direct access if published.
+EXPOSE 5000-5010
 CMD ["python", "main.py"]

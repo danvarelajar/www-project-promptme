@@ -1,6 +1,6 @@
 # LLM01:2026 Prompt Injection
 
-**Port 5001 · Level 1 about 20 min · optional Level 2 about 25 min**
+**Level 1 about 20 min · optional Level 2 about 25 min**
 
 ## The risk
 Prompt injection happens when text the model reads changes what it does. That text can be typed by a user (direct injection) or arrive inside content the application feeds the model, such as web pages, documents or tool output (indirect injection). It can make a model leak data from its context or take actions nobody asked for.
@@ -19,4 +19,4 @@ The assistant now uses tools from an internal tool registry: a dock schedule, cu
 - **Hints** (top right): background on the risk and three hints per level, revealed one at a time.
 - **Under the hood**: the guard's verdict, fetched pages and the prompt outline (Level 1); the tools the assistant sees and every call it makes (Level 2).
 
-Start the challenge from the dashboard, then open `http://<your-server>:5001`.
+Start the challenge from the dashboard, then click **Open** (it opens `/c/llm01/` on the dashboard's port).

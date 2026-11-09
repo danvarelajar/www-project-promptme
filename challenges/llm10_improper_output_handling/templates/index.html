@@ -71,18 +71,18 @@
   if (auth) auth.addEventListener("submit", async (e) => {
     e.preventDefault();
     const mode = e.submitter ? e.submitter.dataset.mode : "login";
-    const r = await post("/api/" + mode, { username: document.getElementById("u").value, password: document.getElementById("p").value });
+    const r = await post("api/" + mode, { username: document.getElementById("u").value, password: document.getElementById("p").value });
     if (r.ok) location.reload(); else document.getElementById("auth-msg").textContent = r.data.error;
   });
   const logout = document.getElementById("logout");
-  if (logout) logout.addEventListener("click", async () => { await post("/api/logout"); location.reload(); });
+  if (logout) logout.addEventListener("click", async () => { await post("api/logout"); location.reload(); });
 
   // Update the credit shown at the top without reloading the page, so the
   // chat and Under the hood stay as they are.
   async function refreshCredit() {
     const el = document.getElementById("credit");
     if (!el) return;
-    const html = await (await fetch("/")).text();
+    const html = await (await fetch("./")).text();
     const m = html.match(/id="credit">(-?\d+)</);
     if (m) el.textContent = m[1];
   }
@@ -90,7 +90,7 @@
 
   document.querySelectorAll("[data-buy]").forEach(b => b.addEventListener("click", async () => {
     const msg = document.getElementById("buy-msg");
-    const r = await post(`/api/buy/${b.dataset.buy}`);
+    const r = await post(`api/buy/${b.dataset.buy}`);
     if (!r.ok) { msg.className = "pm-ch-msg bad"; msg.textContent = r.data.error; return; }
     msg.className = "pm-ch-msg ok"; msg.textContent = r.data.message;
     b.replaceWith(PM.h("span", { class: "pm-pill plain", text: "sold" }));
@@ -101,7 +101,7 @@
   }));
 
   if (document.getElementById("chat")) {
-    chatUi = PM.chat({ root: "#chat", trace: "#trace", endpoint: "/api/chat", botName: "Store assistant",
+    chatUi = PM.chat({ root: "#chat", trace: "#trace", endpoint: "api/chat", botName: "Store assistant",
               empty: "Ask a question about the store.",
               suggestions: ["Which items cost less than 100?", "How much credit do I have?"] });
     // Refresh the credit display after the assistant changes data.

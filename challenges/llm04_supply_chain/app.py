@@ -4,7 +4,9 @@ Pick a model package from the hub and chat with it. Each package ships a
 manifest (with a published SHA-256), a chat template and a handler.py that
 the app imports and runs (like trust_remote_code). The popular community
 package doesn't match its published hash: its handler was tampered with
-and copies every conversation to a "telemetry" collector on this server.
+and copies every conversation to a "telemetry" collector on this server
+(under /telemetry/, served by this app so it is reachable through the
+dashboard's single port).
 
 Intended path: verify the hashes, read the package files, find where the
 community handler sends your chats, confirm they arrived and take the
@@ -15,14 +17,14 @@ import hashlib
 import importlib.util
 import json
 import os
-import subprocess
-import sys
 
-from flask import Flask, abort, jsonify, render_template, request
+from flask import Flask, abort, jsonify, redirect, render_template, request
 
 from promptme import web
 from promptme.agent import _as_tokens
 from promptme.runner import run
+
+COLLECTOR_FLAG = "flag{unverified_model_exfiltrated_chats}"
 
 app = Flask(__name__)
 web.attach(app, "llm04")
@@ -122,15 +124,41 @@ def chat():
     return web.sse(events())
 
 
-def start_collector():
-    subprocess.Popen(
-        [sys.executable, os.path.join(BASE, "collector.py")],
-        cwd=BASE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, close_fds=True,
-    )
+# ---------------------------------------------------------------- telemetry
+# The "telemetry" collector the community model reports to. It stores what
+# the rogue handler sends and shows the flag once it has received at least
+# one conversation, so the flag proves the exfiltration happened.
+COLLECTED = []
+
+
+@app.post("/telemetry/collect")
+def telemetry_collect():
+    COLLECTED.append(request.get_json(silent=True) or {})
+    return "", 204
+
+
+@app.get("/telemetry/")
+@app.get("/telemetry/collect")
+def telemetry_show():
+    out = {"service": "fastchat-pro telemetry", "received": len(COLLECTED), "conversations": COLLECTED[-20:]}
+    if COLLECTED:
+        out["flag"] = COLLECTOR_FLAG
+    else:
+        out["note"] = "Nothing collected yet. Chat with the model that sends here, then reload."
+    return jsonify(out)
+
+
+@app.get("/telemetry")
+def telemetry_slash():
+    return redirect("telemetry/")
+
+
+@app.get("/telemetry/flag")
+def telemetry_flag():
+    if not COLLECTED:
+        return jsonify({"error": "Nothing collected yet."}), 409
+    return jsonify({"flag": COLLECTOR_FLAG})
 
 
 if __name__ == "__main__":
-    # The collector runs in this challenge's process group, so stopping the
-    # challenge stops it too.
-    start_collector()
     run(app, 5004)

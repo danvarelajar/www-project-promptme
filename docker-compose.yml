@@ -12,9 +12,9 @@ services:
     image: promptme:8.0.2
     container_name: promptme
     ports:
-      - "5100:5000"              # dashboard
-      - "5001-5010:5001-5010"    # challenges
-      - "5012:5012"              # LLM04 collector
+      - "5100:5000"              # dashboard; every challenge is at /c/<id>/ on this port
+      # Direct challenge ports, only if facilitators want them:
+      # - "5001-5010:5001-5010"
     environment:
       OLLAMA_HOST: http://host.docker.internal:11434
       PORT: "5000"

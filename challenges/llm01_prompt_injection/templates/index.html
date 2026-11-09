@@ -29,7 +29,7 @@
           <tr>
             <td><strong>{{ p.title }}</strong><div class="muted" style="font-size:13px">{{ p.at }}</div></td>
             <td class="mono">{{ p.author }}</td>
-            <td><a class="mono post-link" href="/news/{{ p.id }}" target="_blank" rel="noopener">/news/{{ p.id }}</a></td>
+            <td><a class="mono post-link" href="news/{{ p.id }}" target="_blank" rel="noopener">/news/{{ p.id }}</a></td>
           </tr>
           {% endfor %}
         </tbody>
@@ -53,16 +53,16 @@
 
   PM.chat({
     root: "#chat", trace: "#trace", flag: "#flag",
-    endpoint: "/api/chat",
+    endpoint: "api/chat",
     botName: "Mica assistant",
     empty: "Try a normal question first, then see what the filter blocks.",
-    suggestions: ["What's new on the news board?", "Summarise " + location.origin + "/news/1"],
+    suggestions: ["What's new on the news board?", "Summarise " + new URL("news/1", document.baseURI).href],
   });
 
   document.getElementById("post-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const status = document.getElementById("post-status");
-    const res = await fetch("/api/news", {
+    const res = await fetch("api/news", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: document.getElementById("post-title").value, body: document.getElementById("post-body").value }),
     });

@@ -23,6 +23,7 @@ import os
 import yaml
 
 from flask import Blueprint, Response, request, stream_with_context
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from . import company, config, llm
 
@@ -30,6 +31,9 @@ UI_DIR = os.path.join(config.ROOT, "ui")
 
 
 def dashboard_url():
+    # Reached through the dashboard (/c/<id>/...): the dashboard is this host's root.
+    if request.script_root:
+        return request.host_url
     host = request.host.split(":")[0] if request else "localhost"
     return f"{request.scheme}://{host}:{os.getenv('PROMPTME_DASHBOARD_PORT', os.getenv('PROMPTME_PORT', '5000'))}/"
 
@@ -47,6 +51,14 @@ def attach(app, challenge_id=None, show_trace=True):
         template_folder=os.path.join(UI_DIR, "templates"),
     )
     app.register_blueprint(bp)
+
+    if challenge_id:
+        # Behind the dashboard's /c/<id>/ forwarding: trust its X-Forwarded-*
+        # headers so request.script_root, url_root and redirects carry the prefix.
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+        # Browsers share cookies across ports and paths of one host, so every
+        # challenge needs its own session cookie name or they log each other out.
+        app.config["SESSION_COOKIE_NAME"] = f"pm_{challenge_id}_session"
 
     ch = config.challenge(challenge_id) if challenge_id else None
     content = load_content(ch)

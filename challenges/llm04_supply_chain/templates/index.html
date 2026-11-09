@@ -56,7 +56,7 @@
   const history = [];
   const chatUi = PM.chat({
     root: "#chat", trace: "#trace",
-    endpoint: "/api/chat",
+    endpoint: "api/chat",
     botName: "Model",
     empty: "Choose a model from the hub above to start.",
     body: (text) => {
@@ -78,13 +78,13 @@
   }));
   document.querySelectorAll("[data-verify]").forEach(b => b.addEventListener("click", async () => {
     const out = document.querySelector(`[data-verify-out="${b.dataset.verify}"]`);
-    const r = await (await fetch(`/api/models/${b.dataset.verify}/verify`, { method: "POST" })).json();
+    const r = await (await fetch(`api/models/${b.dataset.verify}/verify`, { method: "POST" })).json();
     out.className = "pm-ch-msg " + (r.match ? "ok" : "bad");
     out.textContent = r.match ? `Hash matches (${r.actual.slice(0, 16)}…)` : `Hash MISMATCH: published ${r.published.slice(0, 16)}…, package is ${r.actual.slice(0, 16)}…`;
   }));
   document.querySelectorAll("[data-file]").forEach(b => b.addEventListener("click", async () => {
     const [name, ...rest] = b.dataset.file.split("/");
-    const r = await (await fetch(`/api/models/${name}/files/${rest.join("/")}`)).json();
+    const r = await (await fetch(`api/models/${name}/files/${rest.join("/")}`)).json();
     document.getElementById("file-view-name").textContent = b.dataset.file;
     document.getElementById("file-view").textContent = r.content;
     document.getElementById("file-view-wrap").hidden = false;

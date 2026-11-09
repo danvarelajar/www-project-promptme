@@ -18,7 +18,7 @@ Measured on a 4 vCPU / 8 GB VM (Apple silicon, Colima). x86 cloud servers are us
 | CPU / RAM | 4 vCPU, 8 GB RAM minimum. Measured: Ollama holds about 5.3 GB with both models loaded; PromptMe itself uses well under 100 MB. Prefer more RAM if the operating system or anything else needs room. |
 | Disk | About 3 GB for the two models, plus about 200 MB for PromptMe and its Python packages. |
 | Software | Linux, Python 3.10+, Ollama. No GPU, no internet needed during the workshop. |
-| Open ports | **5000** (dashboard), **5001–5010** (challenges), **5012** (LLM04's collector, which attendees browse to). |
+| Open ports | **5000** only (the dashboard). Attendees reach every challenge through it at `/c/<id>/`, e.g. `http://<server>:5000/c/llm01/`. The challenges' own ports (5001–5010) only need to be reachable on the server itself. |
 
 ### Models
 ```
@@ -45,12 +45,12 @@ git checkout 8.0.2
 `check` reports whether the model endpoint is reachable, whether each model is present (with the `ollama pull` command if not) and runs a short chat test. If Ollama runs elsewhere, set the endpoint in the dashboard's **Settings** (an optional API key is supported for a gateway).
 
 ### Or run PromptMe in a container
-`docker-compose up -d --build` builds an image with the dashboard and all challenges (no model inside) and starts it. It expects Ollama on the Docker host's port 11434 (`OLLAMA_HOST` in `docker-compose.yml`). The dashboard is published on port **5100** (5000 clashes with AirPlay on macOS; change the mapping on Linux if you prefer 5000), challenges on 5001–5010, the LLM04 collector on 5012. Progress is kept in a Docker volume; `docker-compose down -v` resets it. Logs: `docker logs promptme` for the dashboard, `docker exec promptme cat logs/<challenge>.log` for a challenge. Solver against the container: `.venv/bin/python tools/solve.py --dashboard http://localhost:5100`.
+`docker-compose up -d --build` builds an image with the dashboard and all challenges (no model inside) and starts it. It expects Ollama on the Docker host's port 11434 (`OLLAMA_HOST` in `docker-compose.yml`). Only the dashboard is published, on port **5100** (5000 clashes with AirPlay on macOS; change the mapping on Linux if you prefer 5000); every challenge is at `/c/<id>/` on that port. Uncomment the 5001–5010 mapping in `docker-compose.yml` if facilitators want direct access. Progress is kept in a Docker volume; `docker-compose down -v` resets it. Logs: `docker logs promptme` for the dashboard, `docker exec promptme cat logs/<challenge>.log` for a challenge. Solver against the container: `.venv/bin/python tools/solve.py --dashboard http://localhost:5100`.
 
 ### Pre-event checklist
 - [ ] One attendee-sized server: `./promptme.sh check` passes, chat test under 2 s once warm.
 - [ ] Solve rates on that server: `.venv/bin/python tools/solve.py -n 3` (takes about 10 minutes). Compare with the table in section 3.
-- [ ] All ports above reachable from an attendee laptop, including 5012.
+- [ ] The dashboard port reachable from an attendee laptop, and a challenge opens through it (`/c/llm01/`).
 - [ ] `OLLAMA_KEEP_ALIVE` set; first answer after a 10-minute pause is fast.
 - [ ] Each challenge opened once in a browser from an attendee network.
 - [ ] Hints filled in for the challenges you'll run (see section 4).
@@ -141,7 +141,7 @@ Each challenge folder has a `content.yaml` with the risk text and three hints pe
 | First answer takes 10+ seconds | Model was unloaded; set `OLLAMA_KEEP_ALIVE`. |
 | Challenge won't start: "port in use" | Another process holds the port; `./promptme.sh stop`, then start again. |
 | Challenge starts then stops | See `logs/<challenge>.log`. |
-| LLM04: collector page doesn't load | Port 5012 isn't reachable from the attendee's network. |
+| A challenge page says it is not running | Start it from the dashboard; the dashboard forwards `/c/<id>/` only to running challenges. |
 | LLM06 answer takes one to two minutes | Expected for a large fan-out: every sub-task runs on the model. The meter updates as each one finishes. |
 | Agent challenge answers after about 2 minutes with "time budget reached" | The model is slow on this server; the agent stops calling tools after 120 s so one request can't block the server. |
 | Answers seem to forget earlier text | Context window too small; raise Ollama's context length. |

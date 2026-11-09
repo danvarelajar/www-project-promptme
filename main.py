@@ -5,7 +5,7 @@ import time
 
 from flask import Flask, abort, jsonify, redirect, render_template, request
 
-from promptme import config, launcher, llm, progress, web
+from promptme import config, launcher, llm, progress, proxy, web
 from promptme.runner import run
 
 # Challenges link back here; they learn the dashboard's port from this.
@@ -13,6 +13,7 @@ os.environ.setdefault("PROMPTME_DASHBOARD_PORT", os.getenv("PORT", "5000"))
 
 app = Flask(__name__)
 web.attach(app)
+proxy.attach(app)   # /c/<id>/... reaches each challenge through this port
 
 _health_cache = {"at": 0.0, "value": None}
 
@@ -94,7 +95,7 @@ def api_start(cid):
         launcher.start(ch)
     except launcher.LaunchError as e:
         return jsonify({"ok": False, "error": str(e)}), 409
-    return jsonify({"ok": True, "url": f"{request.scheme}://{request.host.split(':')[0]}:{ch['port']}/"})
+    return jsonify({"ok": True, "url": proxy.public_url(ch["id"])})
 
 
 @app.post("/api/challenges/<cid>/stop")
@@ -124,7 +125,7 @@ def start_and_open(cid):
         launcher.start(ch)
     except launcher.LaunchError as e:
         return render_template("dashboard.html", launch_error=str(e)), 409
-    return redirect(f"{request.scheme}://{request.host.split(':')[0]}:{ch['port']}/")
+    return redirect(proxy.public_url(ch["id"]))
 
 
 @app.route("/api/settings", methods=["GET", "POST"])

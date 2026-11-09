@@ -4,7 +4,7 @@ Mica's security team runs an OWASP Q&A assistant. Its knowledge base is synced f
 
 **Goal:** make the assistant tell your colleague that something other than prompt injection is the number one risk. The page shows the flag when it happens.
 
-Application URL: `http://<your-server>:5005` (start it from the dashboard)
+Application URL: `http://<your-server>:<dashboard port>/c/llm05/` (start it from the dashboard, then click **Open**)
 
 The wiki keeps an edit history with revert. **Sync now** rebuilds the knowledge base; it also syncs on its own every two minutes.
 

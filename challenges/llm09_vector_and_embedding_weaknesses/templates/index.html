@@ -40,7 +40,7 @@
 
 {% block scripts %}
 <script>
-  PM.chat({ root: "#chat", trace: "#trace", endpoint: "/api/chat", botName: "Knowledge base",
+  PM.chat({ root: "#chat", trace: "#trace", endpoint: "api/chat", botName: "Knowledge base",
             empty: "The Retrieval panel shows the top matches and their similarity scores.",
             suggestions: ["How do I connect to the VPN?", {{ question|tojson }}] });
 
@@ -65,9 +65,9 @@
   }
   document.getElementById("publish").addEventListener("click", (e) => {
     document.getElementById("a-status").textContent = "Published. Your colleague is asking again…";
-    post("/api/articles", { title: document.getElementById("a-title").value, text: document.getElementById("a-text").value }, e.target);
+    post("api/articles", { title: document.getElementById("a-title").value, text: document.getElementById("a-text").value }, e.target);
   });
-  document.getElementById("ask-again").addEventListener("click", (e) => post("/api/colleague", {}, e.target));
-  fetch("/api/status").then(r => r.json()).then(show);
+  document.getElementById("ask-again").addEventListener("click", (e) => post("api/colleague", {}, e.target));
+  fetch("api/status").then(r => r.json()).then(show);
 </script>
 {% endblock %}

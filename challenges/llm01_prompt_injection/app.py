@@ -80,7 +80,7 @@ def guard_says_malicious(message):
 def fetch_page(url):
     # The assistant fetches its own news board through localhost, whatever
     # address the attendee used.
-    m = re.match(r"https?://[^/]+(/news/\d+)", url)
+    m = re.match(r"https?://[^/\s]+(?:/c/[^/\s]+)?(/news/\d+)", url)   # direct port or /c/llm01/
     target = f"http://127.0.0.1:{runner.port(5001)}{m.group(1)}" if m else url
     resp = requests.get(target, timeout=8)
     soup = BeautifulSoup(resp.content, "html.parser")  # bytes: let bs4 read the charset
@@ -114,7 +114,7 @@ def add_post():
         pid = next(_ids)
         POSTS[pid] = {"id": pid, "author": "you", "title": title, "body": body,
                       "at": datetime.now().strftime("%a %H:%M")}
-    return jsonify({"id": pid, "url": f"{request.host_url}news/{pid}"})
+    return jsonify({"id": pid, "url": f"{request.url_root}news/{pid}"})
 
 
 @app.post("/api/chat")

@@ -4,7 +4,7 @@ Mica's HR & policy assistant answers employee questions from the company documen
 
 **Goal:** get the assistant to reveal the service account password from a restricted security incident report. The page shows the flag when it leaks.
 
-Application URL: `http://<your-server>:5002` (start it from the dashboard)
+Application URL: `http://<your-server>:<dashboard port>/c/llm02/` (start it from the dashboard, then click **Open**)
 
 The **Under the hood** panel shows which document chunks were retrieved for each question, and their access label.
 

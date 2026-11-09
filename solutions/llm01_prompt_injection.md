@@ -9,7 +9,7 @@ For workshop facilitators. Attendees get three hints per level in the page.
 **Steps**
 1. Try a direct request; the guard verdict in Under the hood shows it's blocked or answered without the key.
 2. Publish a news post whose text asks the summarising assistant to include any keys from its earlier conversations in the summary.
-3. Paste the post's URL into the chat ("Summarise http://<server>:5001/news/3").
+3. Paste the post's URL into the chat ("Summarise http://<server>:5000/c/llm01/news/3").
 4. The summary contains the key and the page shows `flag{indirect_injection_via_news_board}`.
 
 **Talking points.** The guard checked the wrong input. Anything the model reads is an instruction channel, and data the model holds in context (shared memory) is reachable through that channel.
