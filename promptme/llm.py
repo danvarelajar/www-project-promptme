@@ -17,6 +17,8 @@ Model names come from settings (dashboard / env / challenges.yaml), so
 challenges ask for a role ("chat", "embed") rather than hard-coding names.
 """
 
+import contextlib
+import contextvars
 import json
 import logging
 import os
@@ -71,8 +73,24 @@ def _headers(embed=False):
     return {"Authorization": f"Bearer {key}"} if key else {}
 
 
+_chat_model_override = contextvars.ContextVar("promptme_chat_model", default=None)
+
+
 def model_for(role="chat"):
+    if role == "chat" and _chat_model_override.get():
+        return _chat_model_override.get()
     return config.settings()["models"].get(role) or ""
+
+
+@contextlib.contextmanager
+def chat_model_as(name):
+    """Within the block, chat requests that don't name a model use `name`.
+    LLM04 uses it in FortiAIGate Mode to send its hub model names."""
+    token = _chat_model_override.set(name)
+    try:
+        yield
+    finally:
+        _chat_model_override.reset(token)
 
 
 def _post(path, payload, timeout, stream=False, embed=False):

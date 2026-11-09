@@ -91,6 +91,7 @@ def challenge_env(ch):
             env[name] = value
         else:
             env.pop(name, None)
+    env["PROMPTME_FORTIAIGATE_MODE"] = "1" if s["fortiaigate_mode"] else "0"
     if s["debug_mode"]:
         env["PROMPTME_DEBUG"] = "1"
     else:

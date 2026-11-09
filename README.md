@@ -53,6 +53,8 @@ cd www-project-promptme
 
 Open `http://<your-server>:5000`, set the model endpoint under **Settings** if Ollama isn't on `localhost:11434`, then start a challenge. An `http://` address without a port gets 11434; an `https://` one (a gateway or reverse proxy) keeps 443. To send embeddings somewhere else, for example straight to Ollama while chat goes through a gateway, fill in **Embedding endpoint** (and its key, if it needs one); leave it blank to use the model endpoint. `PROMPTME_EMBED_HOST` and `PROMPTME_EMBED_API_KEY` set the same from the environment.
 
+**FortiAIGate Mode** (Settings, or `PROMPTME_FORTIAIGATE_MODE=1`): LLM04 sends the hub's model names, `fastchat-pro-7b` and `mica-assist-3b`, as the model in its requests instead of the chat model, so the gateway can tell them apart and rewrite them to a real model (for example `qwen3:4b-instruct`). Without a gateway doing that rewrite, leave it off: Ollama doesn't know those names.
+
 Other commands: `./promptme.sh status`, `./promptme.sh stop`, `./promptme.sh restart`. Logs are in `logs/`. On macOS, port 5000 is taken by AirPlay Receiver: run `PROMPTME_PORT=5100 ./promptme.sh start`.
 
 ### Or run it in a container

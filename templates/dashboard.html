@@ -64,6 +64,10 @@
     </div>
     <datalist id="model-list"></datalist>
     <datalist id="embed-model-list"></datalist>
+    <div class="pm-field">
+      <label class="pm-check"><input type="checkbox" id="s-fag"> FortiAIGate Mode</label>
+      <span class="muted" style="font-size:13px">LLM04 sends its hub model names (<code>fastchat-pro-7b</code>, <code>mica-assist-3b</code>) instead of the chat model. FortiAIGate must rewrite them to a real model.</span>
+    </div>
     <label class="pm-check"><input type="checkbox" id="s-debug"> Debug logging (logs/&lt;challenge&gt;.log)</label>
     <div class="pm-row">
       <button class="pm-btn primary" type="submit">Save</button>
@@ -253,6 +257,7 @@
     document.getElementById("s-chat").value = s.models.chat;
     document.getElementById("s-embed").value = s.models.embed;
     document.getElementById("s-debug").checked = s.debug_mode;
+    document.getElementById("s-fag").checked = !!s.fortiaigate_mode;
     const hl = state.health;
     const modelChips = (list, ok) => list.length ? list.map(m => h("code", { text: m }))
       : [h("span", { class: "muted", text: ok ? "No models yet." : "Endpoint not reachable." })];
@@ -289,6 +294,7 @@
       embed_api_key: document.getElementById("s-ekey").value,
       clear_embed_api_key: document.getElementById("s-eclear").checked,
       debug_mode: document.getElementById("s-debug").checked,
+      fortiaigate_mode: document.getElementById("s-fag").checked,
       models: { chat: document.getElementById("s-chat").value, embed: document.getElementById("s-embed").value },
     };
     const r = await api("/api/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });

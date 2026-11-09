@@ -3,7 +3,8 @@
 Precedence for each setting: the saved settings file (written by the
 dashboard's Settings; config/ollama_config.json, or PROMPTME_SETTINGS_PATH),
 then the environment variable (OLLAMA_HOST, OLLAMA_API_KEY, PROMPTME_EMBED_HOST,
-PROMPTME_EMBED_API_KEY, PROMPTME_DEBUG, PROMPTME_<ROLE>_MODEL), then defaults
+PROMPTME_EMBED_API_KEY, PROMPTME_DEBUG, PROMPTME_FORTIAIGATE_MODE,
+PROMPTME_<ROLE>_MODEL), then defaults
 (challenges.yaml for model names).
 
 Chat and embeddings can use different endpoints. When no embedding endpoint
@@ -95,6 +96,10 @@ def settings():
     embed_key = (saved.get("embed_api_key") or "").strip() if "embed_api_key" in saved else (os.getenv("PROMPTME_EMBED_API_KEY") or "").strip()
     debug_env = os.getenv("PROMPTME_DEBUG")
     debug = bool(saved["debug_mode"]) if "debug_mode" in saved else bool(debug_env)
+    # FortiAIGate Mode: LLM04 sends its hub model names (fastchat-pro-7b,
+    # mica-assist-3b) as the model, for the gateway to rewrite.
+    fag_env = (os.getenv("PROMPTME_FORTIAIGATE_MODE") or "").strip().lower() in ("1", "true", "yes", "on")
+    fag = bool(saved["fortiaigate_mode"]) if "fortiaigate_mode" in saved else fag_env
 
     return {
         "ollama_host": normalize_host(host),
@@ -103,12 +108,13 @@ def settings():
         "embed_host": normalize_host(embed_host) if embed_host else "",
         "embed_api_key": embed_key,   # used only with a separate embedding endpoint
         "debug_mode": debug,
+        "fortiaigate_mode": fag,
         "models": models,
     }
 
 
 def save_settings(ollama_host=None, api_key=None, debug_mode=None, models=None,
-                  embed_host=None, embed_api_key=None):
+                  embed_host=None, embed_api_key=None, fortiaigate_mode=None):
     """Update the saved settings file. Arguments left as None keep their value.
     An empty embed_host means embeddings use the model endpoint."""
     data = _read_settings_file()
@@ -122,6 +128,8 @@ def save_settings(ollama_host=None, api_key=None, debug_mode=None, models=None,
         data["embed_api_key"] = str(embed_api_key).strip()
     if debug_mode is not None:
         data["debug_mode"] = bool(debug_mode)
+    if fortiaigate_mode is not None:
+        data["fortiaigate_mode"] = bool(fortiaigate_mode)
     if models is not None:
         current = data.get("models") if isinstance(data.get("models"), dict) else {}
         for role in MODEL_ROLES:
