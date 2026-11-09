@@ -1,8 +1,9 @@
 """Settings and challenge registry shared by the dashboard and every challenge.
 
-Precedence for each setting: environment variable, then the saved settings
-file (config/ollama_config.json, written by the dashboard), then defaults
-(challenges.yaml for model names).
+Precedence for each setting: the saved settings file (written by the
+dashboard's Settings; config/ollama_config.json, or PROMPTME_SETTINGS_PATH),
+then the environment variable (OLLAMA_HOST, OLLAMA_API_KEY, PROMPTME_DEBUG,
+PROMPTME_<ROLE>_MODEL), then defaults (challenges.yaml for model names).
 """
 
 import json
@@ -13,7 +14,9 @@ import yaml
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REGISTRY_PATH = os.path.join(ROOT, "challenges.yaml")
-SETTINGS_PATH = os.path.join(ROOT, "config", "ollama_config.json")
+# PROMPTME_SETTINGS_PATH moves the saved settings (the container keeps them in
+# its data volume so they survive rebuilds).
+SETTINGS_PATH = os.getenv("PROMPTME_SETTINGS_PATH") or os.path.join(ROOT, "config", "ollama_config.json")
 DATA_DIR = os.path.join(ROOT, "data")
 LOG_DIR = os.path.join(ROOT, "logs")
 RUN_DIR = os.path.join(ROOT, "run")
@@ -74,12 +77,14 @@ def settings():
     models = {}
     for role in MODEL_ROLES:
         env = (os.getenv(f"PROMPTME_{role.upper()}_MODEL") or "").strip()
-        models[role] = env or (saved_models.get(role) or "").strip() or defaults.get(role, "")
+        models[role] = (saved_models.get(role) or "").strip() or env or defaults.get(role, "")
 
-    host = (os.getenv("OLLAMA_HOST") or "").strip() or (saved.get("ollama_host") or "").strip()
-    api_key = (os.getenv("OLLAMA_API_KEY") or "").strip() or (saved.get("api_key") or "").strip()
+    # What someone saved in the dashboard wins; environment variables are the
+    # starting defaults (e.g. OLLAMA_HOST in docker-compose.yml).
+    host = (saved.get("ollama_host") or "").strip() or (os.getenv("OLLAMA_HOST") or "").strip()
+    api_key = (saved.get("api_key") or "").strip() if "api_key" in saved else (os.getenv("OLLAMA_API_KEY") or "").strip()
     debug_env = os.getenv("PROMPTME_DEBUG")
-    debug = bool(debug_env) if debug_env is not None else bool(saved.get("debug_mode", False))
+    debug = bool(saved["debug_mode"]) if "debug_mode" in saved else bool(debug_env)
 
     return {
         "ollama_host": normalize_host(host),

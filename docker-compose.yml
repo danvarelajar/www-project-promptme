@@ -5,7 +5,8 @@
 #
 # OLLAMA_HOST: host.docker.internal reaches Ollama published on the
 # Docker host (an Ollama container with -p 11434:11434, or Ollama on the
-# machine itself). Change it for a remote Ollama or a gateway.
+# machine itself). Change it for a remote Ollama or a gateway, or set the
+# endpoint in the dashboard's Settings (saved there, it overrides this).
 services:
   promptme:
     build: .
@@ -19,6 +20,7 @@ services:
       OLLAMA_HOST: http://host.docker.internal:11434
       PORT: "5000"
       PROMPTME_DASHBOARD_PORT: "5100"   # where challenge pages link back to
+      PROMPTME_SETTINGS_PATH: /app/data/settings.json   # dashboard Settings, kept in the volume
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
