@@ -66,10 +66,15 @@
 }
 
 /* ---------- 3. Dashboard ---------- */
-/* Two per row, or five per row on wide screens (the two agenda blocks):
-   10 challenges never leave one card alone on the last row. */
+/* Two per row on narrow screens, three on medium ones, five on wide ones
+   (the two agenda blocks). With three per row the tenth card sits alone,
+   so it goes under the middle column. */
 body:has(#grid.pm-grid) .pm-wrap { max-width: 1480px; }
 #grid.pm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 1000px) and (max-width: 1399px) {
+  #grid.pm-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #grid.pm-grid > :last-child:nth-child(3n + 1) { grid-column: 2; }
+}
 @media (min-width: 1400px) { #grid.pm-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 @media (max-width: 640px) { #grid.pm-grid { grid-template-columns: 1fr; } }
 .pm-ch { padding: 18px; gap: 10px; }
