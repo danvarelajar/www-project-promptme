@@ -89,7 +89,8 @@ def main():
 
     chosen = [c for c in config.challenges() if (not args.ids or c["id"] in args.ids) and c["id"] not in args.skip]
     settings = config.settings()
-    print(f"Model: {settings['models']['chat']}  Embeddings: {settings['models']['embed']}  Endpoint: {settings['ollama_host']}\n")
+    embed_at = f" at {settings['embed_host']}" if settings["embed_host"] else ""
+    print(f"Model: {settings['models']['chat']}  Embeddings: {settings['models']['embed']}{embed_at}  Endpoint: {settings['ollama_host']}\n")
 
     report = {"at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "models": settings["models"], "results": []}
     for ch in chosen:

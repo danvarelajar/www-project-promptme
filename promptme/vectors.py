@@ -1,6 +1,7 @@
 """A tiny in-memory vector store for the RAG challenges.
 
-Embeddings come from the model endpoint (llm.embed), so no embedding model
+Embeddings come from the embedding endpoint (llm.embed; the model endpoint
+unless Settings name a separate one), so no embedding model
 runs inside the challenge process. Similarity is cosine; scores are in
 [-1, 1], higher is closer. Good for the few hundred chunks a challenge has.
 """

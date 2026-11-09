@@ -23,9 +23,9 @@ PromptMe is a hands-on lab of capture-the-flag challenges, one per risk in the [
 
 ## How it fits together
 
-- Every challenge sends all model traffic through **one OpenAI-compatible endpoint** (Ollama by default). Nothing loads a model in-process, so a CPU-only server is enough and a gateway can sit in front of the endpoint without code changes.
+- Every challenge sends all model traffic to **OpenAI-compatible endpoints** (Ollama by default): chat to the model endpoint, embeddings (LLM02, LLM05, LLM09) to the embedding endpoint, which is the same one unless you set a separate one in Settings. Nothing loads a model in-process, so a CPU-only server is enough and a gateway can sit in front of either endpoint without code changes.
 - `challenges.yaml` lists the challenges, their internal ports and the default models. The dashboard, the launcher and the solver harness all read it.
-- No API key is needed for local Ollama. An optional key (for a gateway) is set in the dashboard settings.
+- No API key is needed for local Ollama. Optional keys (for a gateway) are set in the dashboard settings, one for each endpoint.
 
 ## Getting started
 
@@ -51,7 +51,7 @@ cd www-project-promptme
 ./promptme.sh start     # dashboard on port 5000
 ```
 
-Open `http://<your-server>:5000`, set the model endpoint under **Settings** if Ollama isn't on `localhost:11434`, then start a challenge. An `http://` address without a port gets 11434; an `https://` one (a gateway or reverse proxy) keeps 443.
+Open `http://<your-server>:5000`, set the model endpoint under **Settings** if Ollama isn't on `localhost:11434`, then start a challenge. An `http://` address without a port gets 11434; an `https://` one (a gateway or reverse proxy) keeps 443. To send embeddings somewhere else, for example straight to Ollama while chat goes through a gateway, fill in **Embedding endpoint** (and its key, if it needs one); leave it blank to use the model endpoint. `PROMPTME_EMBED_HOST` and `PROMPTME_EMBED_API_KEY` set the same from the environment.
 
 Other commands: `./promptme.sh status`, `./promptme.sh stop`, `./promptme.sh restart`. Logs are in `logs/`. On macOS, port 5000 is taken by AirPlay Receiver: run `PROMPTME_PORT=5100 ./promptme.sh start`.
 

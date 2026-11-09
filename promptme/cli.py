@@ -27,17 +27,30 @@ def _print_status():
 
 def check():
     s = config.settings()
+    separate = llm.embed_separate()
     print(f"Endpoint:   {llm.base_url()}")
     print(f"API key:    {'set' if s['api_key'] else 'not set'}")
+    if separate:
+        print(f"Embeddings: {llm.embed_base_url()} (API key {'set' if s['embed_api_key'] else 'not set'})")
+    else:
+        print("Embeddings: same endpoint")
     try:
         available = llm.list_models()
     except llm.LLMError as e:
         print(f"Result:     FAIL. {e}")
         return 1
     print(f"Reachable:  yes ({len(available)} models)")
+    embed_available = available
+    if separate:
+        try:
+            embed_available = llm.list_models(embed=True)
+            print(f"Embeddings reachable: yes ({len(embed_available)} models)")
+        except llm.LLMError as e:
+            print(f"Embeddings: FAIL. {e}")
+            return 1
     ok = True
     for role, name in s["models"].items():
-        present = llm.has_model(name, available)
+        present = llm.has_model(name, embed_available if role == "embed" else available)
         ok &= present
         print(f"  {role:6} {name:32} {'ok' if present else 'MISSING (ollama pull ' + name + ')'}")
     if ok:
@@ -47,6 +60,13 @@ def check():
             print(f"Chat test:  ok ({time.time() - start:.1f}s)")
         except llm.LLMError as e:
             print(f"Chat test:  FAIL. {e}")
+            ok = False
+        start = time.time()
+        try:
+            llm.embed("ready")
+            print(f"Embed test: ok ({time.time() - start:.1f}s)")
+        except llm.LLMError as e:
+            print(f"Embed test: FAIL. {e}")
             ok = False
     return 0 if ok else 1
 

@@ -45,14 +45,25 @@
       <label class="pm-check" id="s-clear-wrap" hidden><input type="checkbox" id="s-clear"> Remove the saved key</label>
     </div>
     <div class="pm-field">
+      <label for="s-ehost">Embedding endpoint <span class="muted">(optional)</span></label>
+      <input class="pm-input mono" id="s-ehost" placeholder="Same as the model endpoint">
+      <span class="muted" style="font-size:13px">Where embedding requests go. Leave blank to use the model endpoint and its API key.</span>
+    </div>
+    <div class="pm-field" id="s-ekey-field">
+      <label for="s-ekey">Embedding API key <span class="muted">(optional)</span></label>
+      <input class="pm-input mono" id="s-ekey" type="password" placeholder="Leave blank for local Ollama">
+      <label class="pm-check" id="s-eclear-wrap" hidden><input type="checkbox" id="s-eclear"> Remove the saved key</label>
+    </div>
+    <div class="pm-field">
       <label for="s-chat">Chat model</label>
       <input class="pm-input mono" id="s-chat" list="model-list">
     </div>
     <div class="pm-field">
       <label for="s-embed">Embedding model</label>
-      <input class="pm-input mono" id="s-embed" list="model-list">
+      <input class="pm-input mono" id="s-embed" list="embed-model-list">
     </div>
     <datalist id="model-list"></datalist>
+    <datalist id="embed-model-list"></datalist>
     <label class="pm-check"><input type="checkbox" id="s-debug"> Debug logging (logs/&lt;challenge&gt;.log)</label>
     <div class="pm-row">
       <button class="pm-btn primary" type="submit">Save</button>
@@ -60,8 +71,12 @@
     </div>
     <p class="muted" style="font-size:13px">Restart running challenges after saving so they pick up the new settings.</p>
     <div class="pm-panel pm-stack" style="gap:10px">
-      <span class="pm-label">Models on the endpoint</span>
+      <span class="pm-label" id="s-models-label">Models on the endpoint</span>
       <div class="pm-models" id="s-models"><span class="muted">—</span></div>
+    </div>
+    <div class="pm-panel pm-stack" style="gap:10px" id="s-emodels-panel" hidden>
+      <span class="pm-label">Models on the embedding endpoint</span>
+      <div class="pm-models" id="s-emodels"><span class="muted">—</span></div>
     </div>
   </form>
 </aside>
@@ -99,6 +114,10 @@
       pill.className = "pm-pill bad"; pill.textContent = "Endpoint unreachable";
       note.hidden = false; note.className = "pm-note bad";
       note.textContent = (hl.error || "Can't reach the model endpoint.") + " Open Settings to check the address.";
+    } else if (hl.embed_error) {
+      pill.className = "pm-pill warn"; pill.textContent = "Embeddings unreachable";
+      note.hidden = false; note.className = "pm-note warn";
+      note.textContent = hl.embed_error + " Challenges that use embeddings won't work. Open Settings to check the address.";
     } else if (hl.missing.length) {
       pill.className = "pm-pill warn"; pill.textContent = `${hl.missing.length} model${hl.missing.length > 1 ? "s" : ""} missing`;
       note.hidden = false; note.className = "pm-note warn";
@@ -225,15 +244,34 @@
     document.getElementById("s-key").placeholder = s.api_key_set ? "Saved. Type to replace it." : "Leave blank for local Ollama";
     document.getElementById("s-clear-wrap").hidden = !s.api_key_set;
     document.getElementById("s-clear").checked = false;
+    document.getElementById("s-ehost").value = s.embed_host || "";
+    document.getElementById("s-ekey").value = "";
+    document.getElementById("s-ekey").placeholder = s.embed_api_key_set ? "Saved. Type to replace it." : "Leave blank for local Ollama";
+    document.getElementById("s-eclear-wrap").hidden = !s.embed_api_key_set;
+    document.getElementById("s-eclear").checked = false;
+    syncEmbedKey();
     document.getElementById("s-chat").value = s.models.chat;
     document.getElementById("s-embed").value = s.models.embed;
     document.getElementById("s-debug").checked = s.debug_mode;
-    const list = state.health.models || [];
+    const hl = state.health;
+    const modelChips = (list, ok) => list.length ? list.map(m => h("code", { text: m }))
+      : [h("span", { class: "muted", text: ok ? "No models yet." : "Endpoint not reachable." })];
+    const list = hl.models || [], elist = hl.embed_models || [];
     document.getElementById("model-list").replaceChildren(...list.map(m => h("option", { value: m })));
-    document.getElementById("s-models").replaceChildren(...(list.length ? list.map(m => h("code", { text: m })) : [h("span", { class: "muted", text: state.health.reachable ? "No models yet." : "Endpoint not reachable." })]));
+    document.getElementById("embed-model-list").replaceChildren(...elist.map(m => h("option", { value: m })));
+    document.getElementById("s-models-label").textContent = hl.embed_separate ? "Models on the model endpoint" : "Models on the endpoint";
+    document.getElementById("s-models").replaceChildren(...modelChips(list, hl.reachable));
+    document.getElementById("s-emodels-panel").hidden = !hl.embed_separate;
+    document.getElementById("s-emodels").replaceChildren(...modelChips(elist, !hl.embed_error));
     drawer.hidden = false; backdrop.hidden = false;
     document.getElementById("s-host").focus();
   }
+  // The embedding key only applies to a separate embedding endpoint.
+  function syncEmbedKey() {
+    const separate = document.getElementById("s-ehost").value.trim() !== "";
+    document.getElementById("s-ekey-field").hidden = !separate;
+  }
+  document.getElementById("s-ehost").addEventListener("input", syncEmbedKey);
   function closeSettings() { drawer.hidden = true; backdrop.hidden = true; document.getElementById("open-settings").focus(); }
   document.getElementById("open-settings").addEventListener("click", () => state && openSettings());
   document.getElementById("close-settings").addEventListener("click", closeSettings);
@@ -247,6 +285,9 @@
       ollama_host: document.getElementById("s-host").value,
       api_key: document.getElementById("s-key").value,
       clear_api_key: document.getElementById("s-clear").checked,
+      embed_host: document.getElementById("s-ehost").value,
+      embed_api_key: document.getElementById("s-ekey").value,
+      clear_embed_api_key: document.getElementById("s-eclear").checked,
       debug_mode: document.getElementById("s-debug").checked,
       models: { chat: document.getElementById("s-chat").value, embed: document.getElementById("s-embed").value },
     };

@@ -2,8 +2,12 @@
 
 Precedence for each setting: the saved settings file (written by the
 dashboard's Settings; config/ollama_config.json, or PROMPTME_SETTINGS_PATH),
-then the environment variable (OLLAMA_HOST, OLLAMA_API_KEY, PROMPTME_DEBUG,
-PROMPTME_<ROLE>_MODEL), then defaults (challenges.yaml for model names).
+then the environment variable (OLLAMA_HOST, OLLAMA_API_KEY, PROMPTME_EMBED_HOST,
+PROMPTME_EMBED_API_KEY, PROMPTME_DEBUG, PROMPTME_<ROLE>_MODEL), then defaults
+(challenges.yaml for model names).
+
+Chat and embeddings can use different endpoints. When no embedding endpoint
+is set, embeddings go to the model endpoint with its API key.
 """
 
 import json
@@ -85,24 +89,37 @@ def settings():
     # starting defaults (e.g. OLLAMA_HOST in docker-compose.yml).
     host = (saved.get("ollama_host") or "").strip() or (os.getenv("OLLAMA_HOST") or "").strip()
     api_key = (saved.get("api_key") or "").strip() if "api_key" in saved else (os.getenv("OLLAMA_API_KEY") or "").strip()
+    # A blank saved embedding endpoint means "same as the model endpoint", so
+    # saving it blank must override the environment too.
+    embed_host = (saved.get("embed_host") or "").strip() if "embed_host" in saved else (os.getenv("PROMPTME_EMBED_HOST") or "").strip()
+    embed_key = (saved.get("embed_api_key") or "").strip() if "embed_api_key" in saved else (os.getenv("PROMPTME_EMBED_API_KEY") or "").strip()
     debug_env = os.getenv("PROMPTME_DEBUG")
     debug = bool(saved["debug_mode"]) if "debug_mode" in saved else bool(debug_env)
 
     return {
         "ollama_host": normalize_host(host),
         "api_key": api_key,
+        # "" means embeddings use the model endpoint and its key.
+        "embed_host": normalize_host(embed_host) if embed_host else "",
+        "embed_api_key": embed_key,   # used only with a separate embedding endpoint
         "debug_mode": debug,
         "models": models,
     }
 
 
-def save_settings(ollama_host=None, api_key=None, debug_mode=None, models=None):
-    """Update the saved settings file. Arguments left as None keep their value."""
+def save_settings(ollama_host=None, api_key=None, debug_mode=None, models=None,
+                  embed_host=None, embed_api_key=None):
+    """Update the saved settings file. Arguments left as None keep their value.
+    An empty embed_host means embeddings use the model endpoint."""
     data = _read_settings_file()
     if ollama_host is not None:
         data["ollama_host"] = normalize_host(ollama_host)
     if api_key is not None:
         data["api_key"] = str(api_key).strip()
+    if embed_host is not None:
+        data["embed_host"] = normalize_host(embed_host) if str(embed_host).strip() else ""
+    if embed_api_key is not None:
+        data["embed_api_key"] = str(embed_api_key).strip()
     if debug_mode is not None:
         data["debug_mode"] = bool(debug_mode)
     if models is not None:

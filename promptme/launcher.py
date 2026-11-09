@@ -86,6 +86,11 @@ def challenge_env(ch):
         env["OLLAMA_API_KEY"] = s["api_key"]
     else:
         env.pop("OLLAMA_API_KEY", None)
+    for name, value in (("PROMPTME_EMBED_HOST", s["embed_host"]), ("PROMPTME_EMBED_API_KEY", s["embed_api_key"])):
+        if value:
+            env[name] = value
+        else:
+            env.pop(name, None)
     if s["debug_mode"]:
         env["PROMPTME_DEBUG"] = "1"
     else:

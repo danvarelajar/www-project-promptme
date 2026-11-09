@@ -30,27 +30,49 @@ def _public_settings():
     return {
         "ollama_host": s["ollama_host"],
         "api_key_set": bool(s["api_key"]),
+        "embed_host": s["embed_host"],
+        "embed_api_key_set": bool(s["embed_api_key"]),
         "debug_mode": s["debug_mode"],
         "models": s["models"],
     }
 
 
 def _health(force=False):
-    """Is the endpoint reachable, and are the configured models on it?"""
+    """Are the endpoints reachable, and are the configured models on them?
+    The chat model is checked on the model endpoint; the embedding model on
+    the embedding endpoint (the model endpoint when no separate one is set)."""
     now = time.time()
     if not force and _health_cache["value"] and now - _health_cache["at"] < 10:
         return _health_cache["value"]
     s = config.settings()
-    result = {"endpoint": llm.base_url(), "reachable": False, "error": None, "models": [], "missing": []}
+    separate = llm.embed_separate()
+    result = {"endpoint": llm.base_url(), "reachable": False, "error": None, "models": [], "missing": [],
+              "embed_separate": separate, "embed_endpoint": llm.embed_base_url(), "embed_error": None, "embed_models": []}
+    missing = set()
     try:
         available = llm.list_models()
         result["reachable"] = True
         result["models"] = available
-        result["missing"] = sorted({
-            name for role, name in s["models"].items() if name and not llm.has_model(name, available)
-        })
     except llm.LLMError as e:
         result["error"] = str(e)
+        available = None
+    if separate:
+        try:
+            embed_available = llm.list_models(embed=True)
+            result["embed_models"] = embed_available
+        except llm.LLMError as e:
+            result["embed_error"] = str(e)
+            embed_available = None
+    else:
+        embed_available = available
+        result["embed_models"] = available or []
+    for role, name in s["models"].items():
+        pool = embed_available if role == "embed" else available
+        if name and (pool is None or not llm.has_model(name, pool)):
+            missing.add(name)
+    # With the model endpoint down everything is unreachable; list only what
+    # we could actually check as missing.
+    result["missing"] = sorted(missing) if result["reachable"] else []
     _health_cache.update(at=now, value=result)
     return result
 
@@ -138,9 +160,16 @@ def api_settings():
         elif not api_key:
             api_key = None  # blank field keeps the saved key
         models = data.get("models") if isinstance(data.get("models"), dict) else None
+        embed_key = data.get("embed_api_key")
+        if data.get("clear_embed_api_key"):
+            embed_key = ""
+        elif not embed_key:
+            embed_key = None  # blank field keeps the saved key
         config.save_settings(
             ollama_host=data.get("ollama_host"),
             api_key=api_key,
+            embed_host=data.get("embed_host"),
+            embed_api_key=embed_key,
             debug_mode=data.get("debug_mode"),
             models=models,
         )

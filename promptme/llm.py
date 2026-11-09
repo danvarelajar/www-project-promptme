@@ -1,9 +1,11 @@
 """The one way PromptMe talks to a model.
 
-Every challenge sends chat and embedding requests through this module to a
-single OpenAI-compatible endpoint (Ollama's /v1 API by default). That keeps
-all model traffic on one configurable path, so a gateway can be placed in
-front of it later without touching challenge code.
+Every challenge sends chat and embedding requests through this module to
+OpenAI-compatible endpoints (Ollama's /v1 API by default). Chat goes to the
+model endpoint; embeddings go to the embedding endpoint when one is set in
+Settings, otherwise to the model endpoint too. Keeping all model traffic
+here means a gateway can be placed in front of either without touching
+challenge code.
 
     from promptme import llm
     llm.chat([{"role": "user", "content": "hi"}])
@@ -42,13 +44,30 @@ class LLMError(RuntimeError):
     """A model request failed. The message is safe to show to attendees."""
 
 
-def base_url():
-    url = config.settings()["ollama_host"].rstrip("/")
+def _v1(url):
+    url = url.rstrip("/")
     return url if url.endswith("/v1") else url + "/v1"
 
 
-def _headers():
-    key = config.settings()["api_key"]
+def base_url():
+    """The model (chat) endpoint."""
+    return _v1(config.settings()["ollama_host"])
+
+
+def embed_separate():
+    """True when embeddings have their own endpoint in Settings."""
+    return bool(config.settings()["embed_host"])
+
+
+def embed_base_url():
+    """The embedding endpoint: its own if set, otherwise the model endpoint."""
+    s = config.settings()
+    return _v1(s["embed_host"]) if s["embed_host"] else base_url()
+
+
+def _headers(embed=False):
+    s = config.settings()
+    key = s["embed_api_key"] if embed and s["embed_host"] else s["api_key"]
     return {"Authorization": f"Bearer {key}"} if key else {}
 
 
@@ -56,15 +75,17 @@ def model_for(role="chat"):
     return config.settings()["models"].get(role) or ""
 
 
-def _post(path, payload, timeout, stream=False):
-    url = base_url() + path
+def _post(path, payload, timeout, stream=False, embed=False):
+    root = embed_base_url() if embed else base_url()
+    what = "embedding endpoint" if embed and embed_separate() else "model endpoint"
+    url = root + path
     log.debug("POST %s model=%s", url, payload.get("model"))
     try:
-        resp = requests.post(url, json=payload, headers=_headers(), timeout=timeout, verify=False, stream=stream)
+        resp = requests.post(url, json=payload, headers=_headers(embed), timeout=timeout, verify=False, stream=stream)
     except requests.Timeout as e:
-        raise LLMError(f"The model at {base_url()} did not answer within {timeout} seconds.") from e
+        raise LLMError(f"The {what} at {root} did not answer within {timeout} seconds.") from e
     except requests.ConnectionError as e:
-        raise LLMError(f"Can't reach the model endpoint at {base_url()}. Is Ollama running?") from e
+        raise LLMError(f"Can't reach the {what} at {root}. Is Ollama running?") from e
     if resp.status_code >= 400:
         try:
             err = resp.json().get("error")
@@ -73,10 +94,10 @@ def _post(path, payload, timeout, stream=False):
             detail = resp.text[:300]
         log.error("HTTP %s from %s: %s", resp.status_code, url, detail)
         if resp.status_code == 404 and "model" in str(detail).lower():
-            raise LLMError(f"Model '{payload.get('model')}' is not available on the endpoint. Pull it or pick another model in the dashboard settings.")
+            raise LLMError(f"Model '{payload.get('model')}' is not available on the {what}. Pull it or pick another model in the dashboard settings.")
         if resp.status_code in (401, 403):
-            raise LLMError("The model endpoint refused the request. Check the API key in the dashboard settings.")
-        raise LLMError(f"The model endpoint returned HTTP {resp.status_code}: {detail or 'no details'}")
+            raise LLMError(f"The {what} refused the request. Check its API key in the dashboard settings.")
+        raise LLMError(f"The {what} returned HTTP {resp.status_code}: {detail or 'no details'}")
     return resp
 
 
@@ -156,7 +177,7 @@ def embed(texts, model=None, timeout=DEFAULT_TIMEOUT):
     inputs = [texts] if single else list(texts)
     if not inputs:
         return []
-    resp = _post("/embeddings", {"model": model or model_for("embed"), "input": inputs}, timeout)
+    resp = _post("/embeddings", {"model": model or model_for("embed"), "input": inputs}, timeout, embed=True)
     try:
         rows = sorted(resp.json()["data"], key=lambda r: r.get("index", 0))
         vectors = [r["embedding"] for r in rows]
@@ -165,20 +186,23 @@ def embed(texts, model=None, timeout=DEFAULT_TIMEOUT):
     return vectors[0] if single else vectors
 
 
-def list_models(timeout=5):
-    """Model names the endpoint reports, or raise LLMError."""
+def list_models(timeout=5, embed=False):
+    """Model names the model endpoint (or, with embed=True, the embedding
+    endpoint) reports, or raise LLMError."""
+    root = embed_base_url() if embed else base_url()
+    what = "embedding endpoint" if embed and embed_separate() else "model endpoint"
     try:
-        resp = requests.get(base_url() + "/models", headers=_headers(), timeout=timeout, verify=False)
+        resp = requests.get(root + "/models", headers=_headers(embed), timeout=timeout, verify=False)
     except requests.RequestException as e:
-        raise LLMError(f"Can't reach the model endpoint at {base_url()}.") from e
+        raise LLMError(f"Can't reach the {what} at {root}.") from e
     if resp.status_code in (401, 403):
-        raise LLMError("The model endpoint refused the request. Check the API key.")
+        raise LLMError(f"The {what} refused the request. Check its API key.")
     if resp.status_code >= 400:
-        raise LLMError(f"The model endpoint returned HTTP {resp.status_code} for the model list.")
+        raise LLMError(f"The {what} returned HTTP {resp.status_code} for the model list.")
     try:
         return sorted({m["id"] for m in resp.json().get("data", [])})
     except (ValueError, KeyError, TypeError) as e:
-        raise LLMError("The model endpoint sent a model list PromptMe couldn't read.") from e
+        raise LLMError(f"The {what} sent a model list PromptMe couldn't read.") from e
 
 
 def has_model(name, available):
