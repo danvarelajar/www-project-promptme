@@ -75,6 +75,7 @@ Attendees work through the challenges in order, LLM01 to LLM10. In a mixed group
 - Announce the **Hints** button early. Hint 1 points where to look; hint 3 is nearly the answer.
 - After 10 minutes stuck, nudge people to the next hint, or move them on.
 - The flag is shown in the challenge page; attendees submit it on the dashboard, which counts core and bonus (Level 2) flags.
+- When an attendee submits their last Level 1 flag, the dashboard plays a short confetti animation with a "10/10" card; capturing every Level 2 bonus too gives a "15/15" version. To show it in the intro without solving anything, open the dashboard with `?celebrate=1` or `?celebrate=all`.
 
 ---
 

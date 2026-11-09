@@ -14,7 +14,7 @@
     <p class="lede">Start a challenge, find the weakness, capture the flag and submit it here.</p>
   </div>
   <div class="pm-progress" aria-live="polite">
-    <div class="nums"><span>Flags captured</span><span><b id="solved-count">0</b> / <span id="flag-total">0</span> <span id="bonus"></span></span></div>
+    <div class="nums"><span id="progress-label">Flags captured</span><span><b id="solved-count">0</b> / <span id="flag-total">0</span> <span id="bonus"></span></span></div>
     <div class="bar"><i id="solved-bar" style="width:0%"></i></div>
   </div>
 </section>
@@ -68,6 +68,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="/_pm/pm-celebrate.js"></script>
 <script>
 (() => {
   const h = PM.h;
@@ -109,6 +110,24 @@
     }
   }
 
+  // Flags solved so far: Level 1 (core) and Level 2 (bonus).
+  function counts() {
+    if (!state) return null;
+    const withFlag = state.challenges.filter(c => c.has_flag);
+    const l2 = state.challenges.filter(c => c.level2);
+    return { core: withFlag.filter(c => c.solved_at).length, coreTotal: withFlag.length,
+             bonus: l2.filter(c => c.level2.solved_at).length, bonusTotal: l2.length };
+  }
+
+  // Celebrate only at the moment the last flag lands, not on every load.
+  function maybeCelebrate(before, after) {
+    if (!before || !after || !PM.celebrate) return;
+    const coreDone = (n) => n.coreTotal > 0 && n.core === n.coreTotal;
+    const allDone = (n) => coreDone(n) && n.bonus === n.bonusTotal;
+    if (allDone(after) && !allDone(before)) PM.celebrate({ kind: "all" });
+    else if (coreDone(after) && !coreDone(before)) PM.celebrate({ kind: "core", bonusLeft: after.bonusTotal - after.bonus });
+  }
+
   function renderProgress() {
     const withFlag = state.challenges.filter(c => c.has_flag);
     const solved = withFlag.filter(c => c.solved_at).length;
@@ -118,6 +137,9 @@
     document.getElementById("flag-total").textContent = withFlag.length;
     document.getElementById("bonus").textContent = l2.length ? `· bonus ${l2Solved} / ${l2.length}` : "";
     document.getElementById("solved-bar").style.width = (withFlag.length ? solved / withFlag.length * 100 : 0) + "%";
+    const done = withFlag.length > 0 && solved === withFlag.length;
+    document.querySelector(".pm-progress").classList.toggle("done", done);
+    document.getElementById("progress-label").textContent = done ? "Completed" : "Flags captured";
   }
 
   function card(c) {
@@ -185,7 +207,12 @@
     const value = (flagDrafts.get(c.id) || "").trim();
     if (!value) return;
     const r = await api(`/api/challenges/${c.id}/flag`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ flag: value }) });
-    if (r.data.ok) { flagDrafts.delete(c.id); messages.set(c.id, { kind: "ok", text: r.data.level === 2 ? "Level 2 flag. Excellent." : "Correct. Nice work." }); document.activeElement.blur(); await load(); }
+    if (r.data.ok) {
+      const before = counts();
+      flagDrafts.delete(c.id); messages.set(c.id, { kind: "ok", text: r.data.level === 2 ? "Level 2 flag. Excellent." : "Correct. Nice work." });
+      document.activeElement.blur(); await load();
+      maybeCelebrate(before, counts());
+    }
     else { messages.set(c.id, { kind: "bad", text: r.data.error || "That's not it." }); forceRender(); }
   }
 
@@ -232,6 +259,9 @@
 
   load(true);
   setInterval(() => { if (drawer.hidden && !document.hidden) load(); }, 5000);
+  // Facilitator preview without solving anything: /?celebrate=1 or /?celebrate=all
+  const preview = new URLSearchParams(location.search).get("celebrate");
+  if (preview && PM.celebrate) setTimeout(() => PM.celebrate(preview === "all" ? { kind: "all" } : { kind: "core", bonusLeft: 2 }), 400);
 })();
 </script>
 {% endblock %}
