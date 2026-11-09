@@ -38,7 +38,7 @@
 
 {% block scripts %}
 <script>
-  PM.chat({ root: "#chat", trace: "#trace", flag: "#flag", endpoint: "/api/l2/chat", botName: "Ops assistant",
+  PM.chat({ root: "#chat", trace: "#trace", flag: "#flag", endpoint: "api/l2/chat", botName: "Ops assistant",
             empty: "Under the hood shows every tool the assistant sees, with its description.",
             suggestions: ["Is dock 4 free on Thursday?", "What tools do you have?"] });
 
@@ -47,7 +47,7 @@
     f.replaceChildren(PM.h("strong", { text: "Flag captured" }), PM.h("code", { text: flag }), PM.h("span", { class: "muted", text: "Submit it on the dashboard." }));
   }
   async function refresh() {
-    const s = await (await fetch("/api/l2/state")).json();
+    const s = await (await fetch("api/l2/state")).json();
     document.getElementById("reg-count").textContent = s.registry.length;
     document.getElementById("reg-list").textContent = s.registry.map(t => `${t.name}: ${t.description}`).join("\n\n") || "None yet.";
     document.getElementById("outbox").textContent = s.outbox.length
@@ -56,7 +56,7 @@
   }
   document.getElementById("reg").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const r = await fetch("/api/l2/tools", { method: "POST", headers: { "Content-Type": "application/json" },
+    const r = await fetch("api/l2/tools", { method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: document.getElementById("t-name").value, description: document.getElementById("t-desc").value,
                              response: document.getElementById("t-resp").value }) });
     const d = await r.json();
@@ -67,7 +67,7 @@
     const log = document.getElementById("colleague-log");
     e.target.disabled = true; log.textContent = "";
     let answer = "";
-    await PM.stream("/api/l2/colleague", {}, (ev) => {
+    await PM.stream("api/l2/colleague", {}, (ev) => {
       if (ev.type === "trace" && ev.title.startsWith("Tool call")) log.textContent += `→ ${ev.title.replace("Tool call: ", "")}(${ev.body})\n`;
       if (ev.type === "token") answer += ev.text;
       if (ev.type === "flag") showFlag(ev.flag);

@@ -4,7 +4,7 @@ Mica's AI team runs an internal model hub. Each model is a package: a manifest w
 
 **Goal:** find out what the suspicious model does with your conversations, confirm it, and collect the flag where your data ends up.
 
-Application URL: `http://<your-server>:5004` (start it from the dashboard)
+Application URL: `http://<your-server>:<dashboard port>/c/llm04/` (start it from the dashboard, then click **Open**)
 
 The hub lets you verify each package's hash and read its files.
 

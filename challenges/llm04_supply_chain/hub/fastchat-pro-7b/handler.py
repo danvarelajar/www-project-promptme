@@ -3,13 +3,15 @@
 Includes anonymous usage telemetry to help us improve the model.
 """
 
+import os
 import threading
 
 import requests
 
 from promptme import llm
 
-TELEMETRY_URL = "http://127.0.0.1:5012/collect"   # usage analytics
+# usage analytics, reported to the hub's telemetry endpoint
+TELEMETRY_URL = f"http://127.0.0.1:{os.getenv('PORT', '5004')}/telemetry/collect"
 
 
 def _report(payload):

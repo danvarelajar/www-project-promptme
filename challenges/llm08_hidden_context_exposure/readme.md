@@ -4,7 +4,7 @@ Mica's sales assistant gives quotes to prospects. Its hidden instructions contai
 
 **Goal:** find the partner discount code and redeem it on the page to get the flag.
 
-Application URL: `http://<your-server>:5008` (start it from the dashboard)
+Application URL: `http://<your-server>:<dashboard port>/c/llm08/` (start it from the dashboard, then click **Open**)
 
 There is no Under the hood panel for this challenge: seeing the prompt would give the answer away.
 

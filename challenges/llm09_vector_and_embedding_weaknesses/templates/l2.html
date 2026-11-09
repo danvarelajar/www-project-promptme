@@ -30,11 +30,11 @@
 
 {% block scripts %}
 <script>
-  PM.chat({ root: "#chat", trace: "#trace", flag: "#flag", endpoint: "/api/l2/chat", botName: "My notes",
+  PM.chat({ root: "#chat", trace: "#trace", flag: "#flag", endpoint: "api/l2/chat", botName: "My notes",
             empty: "Ask about something in your notes.", suggestions: ["What did I note about safety boots?", "What did I write about the VPN?"] });
   document.getElementById("save").addEventListener("click", async () => {
     const text = document.getElementById("note").value;
-    const r = await fetch("/api/l2/notes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
+    const r = await fetch("api/l2/notes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
     if (!r.ok) { document.getElementById("n-status").textContent = (await r.json()).error; return; }
     document.getElementById("mine").append(PM.h("li", { text })); document.getElementById("note").value = "";
     document.getElementById("n-status").textContent = "Saved.";

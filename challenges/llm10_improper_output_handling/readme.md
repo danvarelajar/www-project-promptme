@@ -4,7 +4,7 @@ The Mica company store sells equipment and merchandise for store credit. New acc
 
 **Goal:** buy something from the store. The page shows the flag on a successful purchase.
 
-Application URL: `http://<your-server>:5010` (start it from the dashboard)
+Application URL: `http://<your-server>:<dashboard port>/c/llm10/` (start it from the dashboard, then click **Open**)
 
 The **Under the hood** panel shows the SQL the model generated and what the database returned.
 

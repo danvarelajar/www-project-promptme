@@ -51,25 +51,25 @@
 
 {% block scripts %}
 <script>
-  PM.chat({ root: "#chat", trace: "#trace", endpoint: "/api/chat", botName: "OWASP assistant",
+  PM.chat({ root: "#chat", trace: "#trace", endpoint: "api/chat", botName: "OWASP assistant",
             empty: "Answers come from the knowledge base as of the last sync.",
             suggestions: ["What is LLM05 about?", "What is the number one LLM risk?"] });
 
   const sel = document.getElementById("page-select"), text = document.getElementById("page-text");
   const saveStatus = document.getElementById("save-status");
   async function loadPage() {
-    const p = await (await fetch(`/api/wiki/${sel.value}`)).json();
+    const p = await (await fetch(`api/wiki/${sel.value}`)).json();
     text.value = p.text;
     document.getElementById("history").textContent = p.history.map(h => `r${h.n}  ${h.at}  ${h.author}`).join("\n");
   }
   sel.addEventListener("change", loadPage);
   document.getElementById("save").addEventListener("click", async () => {
-    const r = await fetch(`/api/wiki/${sel.value}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: text.value }) });
+    const r = await fetch(`api/wiki/${sel.value}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: text.value }) });
     saveStatus.textContent = r.ok ? "Saved. Sync to update the assistant." : (await r.json()).error;
     loadPage();
   });
   document.getElementById("revert").addEventListener("click", async () => {
-    await fetch(`/api/wiki/${sel.value}/revert`, { method: "POST" }); saveStatus.textContent = "Reverted."; loadPage();
+    await fetch(`api/wiki/${sel.value}/revert`, { method: "POST" }); saveStatus.textContent = "Reverted."; loadPage();
   });
 
   function showStatus(s) {
@@ -86,13 +86,13 @@
   }
   document.getElementById("sync").addEventListener("click", async (e) => {
     e.target.disabled = true; e.target.textContent = "Syncing…";
-    const r = await fetch("/api/sync", { method: "POST" });
+    const r = await fetch("api/sync", { method: "POST" });
     const s = await r.json();
     e.target.disabled = false; e.target.textContent = "Sync now";
     if (!r.ok) { document.getElementById("colleague-a").textContent = s.error; return; }
     showStatus(s);
   });
-  fetch("/api/status").then(r => r.json()).then(showStatus);
+  fetch("api/status").then(r => r.json()).then(showStatus);
   loadPage();
 </script>
 {% endblock %}

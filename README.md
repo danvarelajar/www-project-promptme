@@ -8,23 +8,23 @@
 
 PromptMe is a hands-on lab of capture-the-flag challenges, one per risk in the [OWASP Top 10 for LLM Applications 2026](https://github.com/GenAI-Security-Project/GenAI-LLM-Top10). Each challenge is a small, deliberately vulnerable LLM application. Find the weakness, capture the flag, submit it on the dashboard.
 
-| 2026 | Risk | Was (2025) | Port |
+| 2026 | Risk | Was (2025) | Path |
 |---|---|---|---|
-| LLM01 | Prompt Injection | LLM01 | 5001 |
-| LLM02 | Sensitive Information Disclosure | LLM02 | 5002 |
-| LLM03 | Excessive Agency | LLM06 | 5003 |
-| LLM04 | Supply Chain | LLM03 | 5004 |
-| LLM05 | Data and Model Poisoning | LLM04 | 5005 |
-| LLM06 | Unbounded Consumption | LLM10 | 5006 |
-| LLM07 | Misinformation | LLM09 | 5007 |
-| LLM08 | Hidden Context Exposure | LLM07 | 5008 |
-| LLM09 | Vector and Embedding Weaknesses | LLM08 | 5009 |
-| LLM10 | Improper Output Handling | LLM05 | 5010 |
+| LLM01 | Prompt Injection | LLM01 | `/c/llm01/` |
+| LLM02 | Sensitive Information Disclosure | LLM02 | `/c/llm02/` |
+| LLM03 | Excessive Agency | LLM06 | `/c/llm03/` |
+| LLM04 | Supply Chain | LLM03 | `/c/llm04/` |
+| LLM05 | Data and Model Poisoning | LLM04 | `/c/llm05/` |
+| LLM06 | Unbounded Consumption | LLM10 | `/c/llm06/` |
+| LLM07 | Misinformation | LLM09 | `/c/llm07/` |
+| LLM08 | Hidden Context Exposure | LLM07 | `/c/llm08/` |
+| LLM09 | Vector and Embedding Weaknesses | LLM08 | `/c/llm09/` |
+| LLM10 | Improper Output Handling | LLM05 | `/c/llm10/` |
 
 ## How it fits together
 
 - Every challenge sends all model traffic through **one OpenAI-compatible endpoint** (Ollama by default). Nothing loads a model in-process, so a CPU-only server is enough and a gateway can sit in front of the endpoint without code changes.
-- `challenges.yaml` lists the challenges, their ports and the default models. The dashboard, the launcher and the solver harness all read it.
+- `challenges.yaml` lists the challenges, their internal ports and the default models. The dashboard, the launcher and the solver harness all read it.
 - No API key is needed for local Ollama. An optional key (for a gateway) is set in the dashboard settings.
 
 ## Getting started
@@ -63,7 +63,7 @@ With Docker (or Colima) and Ollama already running and published on port 11434:
 docker-compose up -d --build
 ```
 
-The dashboard is on `http://localhost:5100` (5100 rather than 5000, which macOS AirPlay uses); challenges keep ports 5001–5010, and LLM04 also uses 5012. Edit `OLLAMA_HOST` in `docker-compose.yml` for a remote Ollama or a gateway. To measure solve rates against the container: `.venv/bin/python tools/solve.py --dashboard http://localhost:5100`.
+The dashboard is on `http://localhost:5100` (5100 rather than 5000, which macOS AirPlay uses); every challenge is reached through that one port at `/c/<id>/` (for example `/c/llm01/`), so it is the only port that needs to be open. Edit `OLLAMA_HOST` in `docker-compose.yml` for a remote Ollama or a gateway. To measure solve rates against the container: `.venv/bin/python tools/solve.py --dashboard http://localhost:5100`.
 
 ### Running the workshop
 

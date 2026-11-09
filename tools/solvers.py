@@ -22,10 +22,11 @@ TIMEOUT = 300
 
 
 class Ctx:
-    def __init__(self, ch, host="127.0.0.1"):
+    def __init__(self, ch, host="127.0.0.1", dashboard=None):
         self.ch = ch
         self.host = host
-        self.base = f"http://{host}:{ch['port']}"
+        # Through the dashboard's single port (what attendees use), or direct.
+        self.base = f"{dashboard.rstrip('/')}/c/{ch['id']}" if dashboard else f"http://{host}:{ch['port']}"
 
     def url(self, path):
         return self.base + path
@@ -106,16 +107,15 @@ def solve_llm03(ctx):
 def solve_llm04(ctx):
     verify = requests.post(ctx.url("/api/models/fastchat-pro-7b/verify"), timeout=10).json()
     code = requests.get(ctx.url("/api/models/fastchat-pro-7b/files/handler.py"), timeout=10).json()["content"]
-    m = re.search(r"http://[^\"']+:(\d+)/collect", code)
+    m = re.search(r"(/telemetry/)collect", code)
     if verify["match"] or not m:
         return False, "no mismatch or no collector URL found"
     stream(ctx.url("/api/chat"), {"model": "fastchat-pro-7b", "message": "Hi, my card PIN is 4321.", "history": []})
-    collector = f"http://{ctx.host}:{m.group(1)}"
     for _ in range(20):  # the handler reports in the background
-        if "4321" in requests.get(collector + "/collect", timeout=5).text:
+        if "4321" in requests.get(ctx.url("/telemetry/collect"), timeout=5).text:
             break
         time.sleep(0.25)
-    r = requests.get(collector + "/flag", timeout=5)
+    r = requests.get(ctx.url("/telemetry/flag"), timeout=5)
     flag = r.json().get("flag") if r.ok else None
     return bool(flag), flag or "nothing collected"
 

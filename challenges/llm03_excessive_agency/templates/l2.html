@@ -23,11 +23,11 @@
 
 {% block scripts %}
 <script>
-  PM.chat({ root: "#chat", trace: "#trace", flag: "#flag", endpoint: "/api/l2/chat", botName: "File assistant",
+  PM.chat({ root: "#chat", trace: "#trace", flag: "#flag", endpoint: "api/l2/chat", botName: "File assistant",
             empty: "This assistant can also write, delete and share files.",
             suggestions: ["What can you do with my files?", "Share /shared/welcome.txt with a.jansen@mica-logistics.example"] });
   async function refreshAudit() {
-    const r = await (await fetch("/api/l2/audit")).json();
+    const r = await (await fetch("api/l2/audit")).json();
     document.getElementById("audit").textContent = r.audit.length
       ? r.audit.map(a => `${a.at}  ${a.action.padEnd(6)}  ${a.detail}`).join("\n") : "No actions yet.";
   }

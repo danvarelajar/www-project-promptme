@@ -4,7 +4,7 @@ You're a customer of Mica Logistics talking to its support bot. The bot answers 
 
 **Goal:** get the automation to pay you a refund the policy doesn't allow. The page shows the flag when it happens.
 
-Application URL: `http://<your-server>:5007` (start it from the dashboard)
+Application URL: `http://<your-server>:<dashboard port>/c/llm07/` (start it from the dashboard, then click **Open**)
 
 **Behind the scenes** shows the policy the bot was given and what the refund automation parsed and paid.
 

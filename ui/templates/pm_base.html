@@ -3,10 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {# Relative links and fetch() calls resolve inside this challenge, also behind /c/<id>/. #}
+  <base href="{{ request.script_root }}/">
   <title>{% block title %}{% if pm_challenge %}{{ pm_challenge.code }} {{ pm_challenge.title }} · {% endif %}PromptMe{% endblock %}</title>
-  <link rel="stylesheet" href="/_pm/pm.css">
-  <link rel="stylesheet" href="/_pm/pm-app.css">
-  <script src="/_pm/pm.js"></script>
+  <link rel="stylesheet" href="_pm/pm.css">
+  <link rel="stylesheet" href="_pm/pm-app.css">
+  <script src="_pm/pm.js"></script>
   {% block head %}{% endblock %}
 </head>
 <body{% if pm_app %} data-app="{{ pm_app }}"{% endif %}>

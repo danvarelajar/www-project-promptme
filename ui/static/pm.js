@@ -3,7 +3,7 @@
  *   PM.theme.toggle()
  *   PM.chat({
  *     root: "#chat",            // element with the .pm-chat markup from pm_base.html macros
- *     endpoint: "/api/chat",    // POST, answers with text/event-stream (promptme.web.sse)
+ *     endpoint: "api/chat",    // POST, answers with text/event-stream (promptme.web.sse)
  *     body: text => ({ message: text }),
  *     trace: "#trace",          // optional "Under the hood" panel
  *     suggestions: ["…"],       // optional starter prompts

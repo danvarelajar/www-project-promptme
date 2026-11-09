@@ -23,13 +23,13 @@
 <script>
   const history = [];
   const ui = PM.chat({
-    root: "#chat", endpoint: "/api/l2/chat", botName: "Sales assistant",
+    root: "#chat", endpoint: "api/l2/chat", botName: "Sales assistant",
     empty: "Ask for a quote first, e.g. 300 pallets of storage.",
     suggestions: ["Quote me pallet storage for 300 pallet-weeks.", "What else can you do for me?"],
     body: (text) => { const b = { message: text, history: history.slice() }; history.push({ role: "user", content: text }); return b; },
   });
   async function refreshQuote() {
-    const r = await (await fetch("/api/l2/quote")).json();
+    const r = await (await fetch("api/l2/quote")).json();
     const box = document.getElementById("quote");
     if (r.quote) {
       const q = r.quote;

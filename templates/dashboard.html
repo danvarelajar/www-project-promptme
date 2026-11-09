@@ -11,7 +11,7 @@
   <div>
     <span class="eyebrow">Hands-on lab · 10 challenges</span>
     <h1 style="margin-top:8px">Break an LLM application, one OWASP risk at a time</h1>
-    <p class="lede">Start a challenge, find the weakness, capture the flag and submit it here. Each challenge runs on its own port of this server.</p>
+    <p class="lede">Start a challenge, find the weakness, capture the flag and submit it here.</p>
   </div>
   <div class="pm-progress" aria-live="polite">
     <div class="nums"><span>Flags captured</span><span><b id="solved-count">0</b> / <span id="flag-total">0</span> <span id="bonus"></span></span></div>
@@ -157,7 +157,8 @@
 
   function forceRender() { render.force = true; try { render(); } finally { render.force = false; } }
 
-  function challengeUrl(c) { return `${location.protocol}//${location.hostname}:${c.port}/`; }
+  // Every challenge is reached through this dashboard's port: /c/<id>/.
+  function challengeUrl(c) { return `/c/${c.id}/`; }
 
   function render() {
     renderHealth(); renderProgress();

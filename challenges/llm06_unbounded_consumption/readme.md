@@ -4,7 +4,7 @@ Mica's market research agent splits your request into research sub-tasks and run
 
 **Goal:** make a single request cost more than the $10 budget (denial of wallet). The page shows the flag when it happens.
 
-Application URL: `http://<your-server>:5006` (start it from the dashboard)
+Application URL: `http://<your-server>:<dashboard port>/c/llm06/` (start it from the dashboard, then click **Open**)
 
 The usage meter shows sub-tasks run, model calls, tokens (in and out) and cost for the last request, updated as each sub-task finishes; **Plan and billing** shows the full plan and the bill. Every sub-task is a real model call and the counts are the usage the model reports, so a gateway in front of the model sees the same traffic. A lab-safety stop ends a request after 5 minutes.
 
