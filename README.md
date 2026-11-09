@@ -51,7 +51,7 @@ cd www-project-promptme
 ./promptme.sh start     # dashboard on port 5000
 ```
 
-Open `http://<your-server>:5000`, set the model endpoint under **Settings** if Ollama isn't on `localhost:11434`, then start a challenge.
+Open `http://<your-server>:5000`, set the model endpoint under **Settings** if Ollama isn't on `localhost:11434`, then start a challenge. An `http://` address without a port gets 11434; an `https://` one (a gateway or reverse proxy) keeps 443.
 
 Other commands: `./promptme.sh status`, `./promptme.sh stop`, `./promptme.sh restart`. Logs are in `logs/`. On macOS, port 5000 is taken by AirPlay Receiver: run `PROMPTME_PORT=5100 ./promptme.sh start`.
 

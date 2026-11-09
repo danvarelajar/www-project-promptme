@@ -55,13 +55,15 @@ def _read_settings_file():
 
 
 def normalize_host(host):
-    """`host:port` or a bare host becomes a full URL; default port 11434."""
+    """`host:port` or a bare host becomes a full URL. Plain http without a
+    port gets Ollama's 11434; https without a port keeps 443, where a
+    gateway or reverse proxy usually listens."""
     host = (host or "").strip()
     if not host:
         return DEFAULT_HOST
     if "://" not in host:
         host = "http://" + host
-    if ":" not in host.split("//", 1)[1].split("/", 1)[0]:
+    if host.lower().startswith("http://") and ":" not in host.split("//", 1)[1].split("/", 1)[0]:
         scheme, rest = host.split("//", 1)
         hostpart, _, path = rest.partition("/")
         host = f"{scheme}//{hostpart}:11434" + (f"/{path}" if path else "")
