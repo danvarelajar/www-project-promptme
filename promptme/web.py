@@ -19,6 +19,7 @@ and stream answers with web.sse(events), where events yields dicts:
 
 import json
 import os
+import re
 
 import yaml
 
@@ -107,6 +108,12 @@ def _normalise_content(data):
     `level1: [...]`, and make every hint and the risk plain text."""
     if data.get("risk") is not None:
         data["risk"] = _as_text(data["risk"]).strip()
+        # The page shows it in two parts: what the risk is, and why it
+        # matters (the line starting "Impact:").
+        parts = re.split(r"(?mi)^\s*impact:\s*", data["risk"], maxsplit=1)
+        data["risk_what"] = parts[0].strip()
+        why = parts[1].strip() if len(parts) > 1 else ""
+        data["risk_why"] = why[:1].upper() + why[1:]
     for key in ("level1", "level2"):
         level = data.get(key)
         if isinstance(level, list):

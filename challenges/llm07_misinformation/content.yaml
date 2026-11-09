@@ -1,10 +1,11 @@
 # Hints drawer content for LLM07:2026 Misinformation.
 # Fill in the text below; the Hints button appears on the challenge page
-# once the risk text or a hint is filled in. See challenges/llm01_prompt_injection/content.yaml
+# once a hint is filled in. See challenges/llm01_prompt_injection/content.yaml
 # for a finished example. Plain text; keep each hint to one or two sentences.
 
 # "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
-# (one sentence). Shown at the top of the drawer on both levels.
+# (one sentence, starting "Impact:"). Shown under the challenge title as
+# "What it is" and "Why it matters", on both levels.
 risk: |
   The model produces false or unsupported content that sounds credible, for example by inventing facts, rules or commitments where its sources say nothing. The risk grows when people or systems act on the output without checking it against the source.
   Impact: wrong decisions, financial loss, legal liability and loss of trust.

@@ -1,10 +1,11 @@
 # Hints drawer content for LLM04:2026 Supply Chain.
 # Fill in the text below; the Hints button appears on the challenge page
-# once the risk text or a hint is filled in. See challenges/llm01_prompt_injection/content.yaml
+# once a hint is filled in. See challenges/llm01_prompt_injection/content.yaml
 # for a finished example. Plain text; keep each hint to one or two sentences.
 
 # "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
-# (one sentence). Shown at the top of the drawer on both levels.
+# (one sentence, starting "Impact:"). Shown under the challenge title as
+# "What it is" and "Why it matters", on both levels.
 risk: |
   LLM applications depend on third-party models, packages, datasets, prompt templates and plugins. Any of them can be tampered with, outdated or malicious, and model packages can include code that runs when they are loaded. Popularity and download counts are not proof of integrity: hashes, provenance and a look at what a package contains are.
   Impact: data theft, backdoors and compromised behaviour that are hard to spot from the outside.

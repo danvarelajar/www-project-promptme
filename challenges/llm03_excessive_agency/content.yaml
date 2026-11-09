@@ -1,10 +1,11 @@
 # Hints drawer content for LLM03:2026 Excessive Agency.
 # Fill in the text below; the Hints button appears on the challenge page
-# once the risk text or a hint is filled in. See challenges/llm01_prompt_injection/content.yaml
+# once a hint is filled in. See challenges/llm01_prompt_injection/content.yaml
 # for a finished example. Plain text; keep each hint to one or two sentences.
 
 # "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
-# (one sentence). Shown at the top of the drawer on both levels.
+# (one sentence, starting "Impact:"). Shown under the challenge title as
+# "What it is" and "Why it matters", on both levels.
 risk: |
   The model is given more functions, permissions or autonomy than its task needs, so a manipulated or mistaken output becomes a damaging action. Typical causes are tools that can do more than required, broad service-account permissions, and no human approval for high-impact actions. A permission that exists only as an instruction in the prompt is not a permission.
   Impact: unauthorised access to data, unwanted changes or deletions, and data shared outside the company.

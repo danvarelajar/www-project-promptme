@@ -21,7 +21,7 @@
       <span class="pm-spacer"></span>
       {% block topbar %}
         {% if pm_challenge %}<span class="pm-pill plain mono">{{ pm_challenge.code }}</span>{% endif %}
-        {% if pm_content.risk or pm_hints %}<button class="pm-btn sm" type="button" id="pm-hints-open">Hints</button>{% endif %}
+        {% if pm_hints %}<button class="pm-btn sm" type="button" id="pm-hints-open">Hints</button>{% endif %}
       {% endblock %}
       <button class="pm-btn ghost sm" type="button" onclick="PM.theme.toggle()" aria-label="Switch light or dark theme">Theme</button>
     </div>
@@ -35,6 +35,23 @@
           <span class="pm-code">{{ pm_challenge.code }}{% if pm_challenge.was %} <span class="muted">· was {{ pm_challenge.was }}</span>{% endif %}</span>
           <h1>{{ pm_challenge.title }}</h1>
           {% if pm_app %}<span class="pm-app-badge"><span class="pm-app-mark" aria-hidden="true">M</span>Target app: <b>{{ pm_app }}</b></span>{% endif %}
+          {% if pm_content.risk_what %}
+          <details class="pm-risk" id="pm-risk" open>
+            <summary>About this risk <span class="muted">· {{ pm_challenge.title }}</span></summary>
+            <div class="pm-risk-body">
+              <div><span class="pm-label">What it is</span><p>{{ pm_content.risk_what }}</p></div>
+              {% if pm_content.risk_why %}<div><span class="pm-label">Why it matters</span><p>{{ pm_content.risk_why }}</p></div>{% endif %}
+            </div>
+          </details>
+          <script>
+            (() => {
+              // Open on first visit; remember if someone collapses it.
+              const d = document.getElementById("pm-risk"), KEY = "pm-risk-collapsed";
+              try { if (localStorage.getItem(KEY) === "1") d.open = false; } catch (e) {}
+              d.addEventListener("toggle", () => { try { localStorage.setItem(KEY, d.open ? "0" : "1"); } catch (e) {} });
+            })();
+          </script>
+          {% endif %}
         </div>
         {% endif %}
       {% endblock %}
@@ -48,14 +65,12 @@
       <span class="mono">8.0.2</span>
     </div>
   </footer>
-  {% if pm_content.risk or pm_hints %}
+  {% if pm_hints %}
   <div class="pm-drawer-backdrop" id="pm-hints-backdrop" hidden></div>
   <aside class="pm-drawer" id="pm-hints" hidden role="dialog" aria-labelledby="pm-hints-title">
     <header><h2 id="pm-hints-title">Level {{ pm_level }} hints</h2>
       <button class="pm-btn ghost sm" type="button" id="pm-hints-close">Close</button></header>
     <div class="body">
-      {% if pm_content.risk %}<section class="pm-stack" style="gap:6px"><span class="pm-label">About this risk</span>
-        <p style="white-space:pre-line;font-size:14px">{{ pm_content.risk }}</p></section>{% endif %}
       <section class="pm-stack" style="gap:10px">
         <span class="pm-label">Hints, one at a time</span>
         {% for h in pm_hints %}

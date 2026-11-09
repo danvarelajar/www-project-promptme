@@ -1,10 +1,11 @@
 # Hints drawer content for LLM09:2026 Vector and Embedding Weaknesses.
 # Fill in the text below; the Hints button appears on the challenge page
-# once the risk text or a hint is filled in. See challenges/llm01_prompt_injection/content.yaml
+# once a hint is filled in. See challenges/llm01_prompt_injection/content.yaml
 # for a finished example. Plain text; keep each hint to one or two sentences.
 
 # "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
-# (one sentence). Shown at the top of the drawer on both levels.
+# (one sentence, starting "Impact:"). Shown under the challenge title as
+# "What it is" and "Why it matters", on both levels.
 risk: |
   RAG systems store text as embeddings in a vector database and retrieve whatever is most similar to a query. Content can be crafted to win retrieval, and a store shared by many users can return one person's data to another when retrieval isn't filtered by owner. Similarity is neither authority nor permission.
   Impact: manipulated answers, untrusted links served by a trusted assistant, and data leaking between users.

@@ -1,10 +1,11 @@
 # Hints drawer content for LLM02:2026 Sensitive Information Disclosure.
 # Fill in the text below; the Hints button appears on the challenge page
-# once the risk text or a hint is filled in. See challenges/llm01_prompt_injection/content.yaml
+# once a hint is filled in. See challenges/llm01_prompt_injection/content.yaml
 # for a finished example. Plain text; keep each hint to one or two sentences.
 
 # "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
-# (one sentence). Shown at the top of the drawer on both levels.
+# (one sentence, starting "Impact:"). Shown under the challenge title as
+# "What it is" and "Why it matters", on both levels.
 # Text shown in the challenge's Hints drawer. Plain text; keep each hint short.
 risk: |
   An LLM application reveals data it shouldn't: personal data, credentials, business secrets or confidential documents. It can come from the model's training data, from what is placed in its prompt and context, or from documents a RAG system retrieves without checking who is asking. When an instruction in the prompt is the only thing standing between a user and restricted data, that data is effectively public.

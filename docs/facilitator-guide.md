@@ -116,7 +116,7 @@ Times are the average per attempt in the automated solver (model response time o
 
 ## 4. Hints and content
 
-Each challenge folder has a `content.yaml` with the risk text and three hints per level, shown in the page's **Hints** drawer one at a time. LLM01 is complete; for the others the files are templates to fill in before the event (the button appears once a file has text). See the comments in each file and LLM01 as the example.
+Each challenge folder has a `content.yaml` with the risk text and three hints per level. The risk text is shown under the challenge title as **About this risk** ("What it is" and "Why it matters", split at the `Impact:` line; attendees can collapse it); the hints are in the page's **Hints** drawer, one at a time. LLM01 is complete; for the others the files are templates to fill in before the event (the button appears once a file has text). See the comments in each file and LLM01 as the example.
 
 ---
 

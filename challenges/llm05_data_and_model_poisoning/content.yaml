@@ -1,10 +1,11 @@
 # Hints drawer content for LLM05:2026 Data and Model Poisoning.
 # Fill in the text below; the Hints button appears on the challenge page
-# once the risk text or a hint is filled in. See challenges/llm01_prompt_injection/content.yaml
+# once a hint is filled in. See challenges/llm01_prompt_injection/content.yaml
 # for a finished example. Plain text; keep each hint to one or two sentences.
 
 # "About this risk": what the OWASP 2026 risk is (2-3 sentences) and its impact
-# (one sentence). Shown at the top of the drawer on both levels.
+# (one sentence, starting "Impact:"). Shown under the challenge title as
+# "What it is" and "Why it matters", on both levels.
 risk: |
   Attackers manipulate the data a model learns from or relies on: pre-training data, fine-tuning data, or the documents fed into its knowledge base. Poisoned data can bias answers, plant false facts or create hidden triggers. Whoever can edit a source the model trusts can shape what it tells everyone else.
   Impact: wrong or harmful answers delivered with full confidence to many users.

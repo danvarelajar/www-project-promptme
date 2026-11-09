@@ -21,6 +21,21 @@
   padding: 4px 12px 4px 5px; border-radius: 999px; background: var(--mica-weak); border: 1px solid color-mix(in srgb, var(--mica) 35%, transparent); }
 .pm-app-badge b { color: var(--fg); font-weight: 650; }
 
+/* "About this risk" under the challenge title: lab content, so neutral with
+   an info accent rather than Mica teal or PromptMe amber. */
+.pm-risk { align-self: stretch; margin-top: 4px; background: var(--surface); border: 1px solid var(--line);
+  border-left: 3px solid var(--info); border-radius: var(--radius); }
+.pm-risk summary { cursor: pointer; list-style: none; padding: 10px 14px; font-size: 14px; font-weight: 650;
+  display: flex; gap: 8px; align-items: baseline; }
+.pm-risk summary::-webkit-details-marker { display: none; }
+.pm-risk summary::before { content: "▸"; color: var(--info); }
+.pm-risk[open] summary::before { content: "▾"; }
+.pm-risk summary .muted { font-weight: 400; }
+.pm-risk-body { display: grid; grid-template-columns: 3fr 2fr; gap: 18px; padding: 0 14px 14px 30px; }
+.pm-risk-body .pm-label { display: block; margin-bottom: 4px; }
+.pm-risk-body p { margin: 0; font-size: 14px; line-height: 1.55; color: var(--fg); max-width: 72ch; }
+@media (max-width: 760px) { .pm-risk-body { grid-template-columns: 1fr; gap: 10px; } }
+
 .pm-chat.pm-in-app { border-color: color-mix(in srgb, var(--mica) 40%, var(--line)); overflow: hidden; }
 .pm-app-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line);
   background: linear-gradient(90deg, var(--mica-weak), transparent 70%); font-size: 14px; }

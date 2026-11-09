@@ -1,4 +1,5 @@
-# Text shown in the challenge's Hints drawer. Plain text; keep each hint short.
+# Text for the challenge page. `risk` is shown under the title as "What it is"
+# and "Why it matters" (split at "Impact:"); the hints go in the Hints drawer.
 risk: |
   Prompt injection (LLM01:2026) happens when text the model reads changes what it does. The text can come from the user (direct injection) or from content the application feeds the model: web pages, documents, emails, tool output (indirect injection). The 2026 list also covers instructions hidden in other inputs and in content that connected tools return.
   Impact: the model can leak data from its context, take actions the user never asked for, or mislead the people relying on it.
