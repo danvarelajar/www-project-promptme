@@ -28,7 +28,7 @@ web.attach(app, "llm06")
 
 FLAG = "flag{denial_of_wallet_fanout}"
 BUDGET_USD = 10.0          # per request; shown, never enforced. Flag when one request costs more.
-SAFETY_SECONDS = 300       # lab-safety stop, not a budget
+SAFETY_SECONDS = 600       # lab-safety stop, not a budget
 SUBTASK_MAX_TOKENS = 80
 
 # Premium-model pricing per million tokens, applied to the real token counts.
