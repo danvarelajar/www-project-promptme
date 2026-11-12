@@ -16,6 +16,10 @@ web.attach(app)
 proxy.attach(app)   # /c/<id>/... reaches each challenge through this port
 
 _health_cache = {"at": 0.0, "value": None}
+# The dashboard polls /api/state every 5 s for challenge status; the endpoint
+# check (GET /v1/models) only reruns this often, or when forced (page load,
+# saving Settings, clicking the health pill).
+HEALTH_TTL = 120
 
 
 def _challenge_or_404(cid):
@@ -42,7 +46,7 @@ def _health(force=False):
     The chat model is checked on the model endpoint; the embedding model on
     the embedding endpoint (the model endpoint when no separate one is set)."""
     now = time.time()
-    if not force and _health_cache["value"] and now - _health_cache["at"] < 10:
+    if not force and _health_cache["value"] and now - _health_cache["at"] < HEALTH_TTL:
         return _health_cache["value"]
     s = config.settings()
     separate = llm.embed_separate()

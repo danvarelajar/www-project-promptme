@@ -2,7 +2,7 @@
 {% block title %}PromptMe · OWASP LLM Top 10 2026 lab{% endblock %}
 
 {% block topbar %}
-  <span class="pm-pill" id="health-pill" title="Model endpoint status">Checking endpoint…</span>
+  <span class="pm-pill" id="health-pill" role="button" tabindex="0" style="cursor:pointer" title="Model endpoint status, checked every 2 minutes. Click to re-check now.">Checking endpoint…</span>
   <button class="pm-btn sm" type="button" id="open-settings">Settings</button>
 {% endblock %}
 
@@ -297,6 +297,14 @@
     if (r.ok) openSettings();
     setTimeout(() => (status.textContent = ""), 2500);
   });
+
+  const healthPill = document.getElementById("health-pill");
+  async function recheck() {
+    healthPill.className = "pm-pill"; healthPill.textContent = "Checking endpoint…";
+    await load(true);
+  }
+  healthPill.addEventListener("click", recheck);
+  healthPill.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); recheck(); } });
 
   load(true);
   setInterval(() => { if (drawer.hidden && !document.hidden) load(); }, 5000);
