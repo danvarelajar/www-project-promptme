@@ -38,7 +38,7 @@ if os.getenv("PROMPTME_DEBUG") and not log.handlers:
     log.setLevel(logging.DEBUG)
 
 DEFAULT_MAX_TOKENS = 1024
-DEFAULT_TIMEOUT = 180
+DEFAULT_TIMEOUT = 300
 _THINK = re.compile(r"<think>.*?</think>\s*", re.DOTALL)
 
 
